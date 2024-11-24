@@ -66,6 +66,57 @@ Mesh createTriangleMesh(float size) {
     return mesh;
 }
 
+// Создание координатной сетки с учетом позиции камеры
+Model2D createGrid(Camera2D& camera, float step = 0.1f) {
+    Model2D grid;
+    
+    // Очень светло-серый цвет для линий сетки
+    uint32_t gridColor = 0x222222;
+    float lineWidth = 1.0f;
+
+    // Получаем границы видимой области в мировых координатах
+    float topLeftX, topLeftY, bottomRightX, bottomRightY;
+    camera.screenToWorld(0, 0, topLeftX, topLeftY);
+    camera.screenToWorld(1024, 1024, bottomRightX, bottomRightY);
+    
+    // Добавляем запас для плавного скроллинга
+    float margin = 1.0f;
+    float minX = std::min(topLeftX, bottomRightX) - margin;
+    float maxX = std::max(topLeftX, bottomRightX) + margin;
+    float minY = std::min(topLeftY, bottomRightY) - margin;
+    float maxY = std::max(topLeftY, bottomRightY) + margin;
+    
+    // Округляем до ближайшего шага сетки
+    minX = std::floor(minX / step) * step;
+    maxX = std::ceil(maxX / step) * step;
+    minY = std::floor(minY / step) * step;
+    maxY = std::ceil(maxY / step) * step;
+    
+    // Вертикальные линии
+    for (float x = minX; x <= maxX; x += step) {
+        auto line = std::make_shared<Line2D>(
+            Position(x, minY),
+            Position(x, maxY),
+            gridColor,
+            lineWidth
+        );
+        grid.addShape(line);
+    }
+    
+    // Горизонтальные линии
+    for (float y = minY; y <= maxY; y += step) {
+        auto line = std::make_shared<Line2D>(
+            Position(minX, y),
+            Position(maxX, y),
+            gridColor,
+            lineWidth
+        );
+        grid.addShape(line);
+    }
+    
+    return grid;
+}
+
 // Выбор следующей фигуры в текущей модели
 void selectNextShape(Model2D& model) {
     if (model.getShapeCount() == 0) return;
@@ -114,6 +165,10 @@ int main(int argc, char** args) {
     Scene2D scene;
     scene.setWindow(window);
     scene.setSurface(surface);
+
+    // Добавляем координатную сетку
+    auto gridModel = std::make_shared<Model2D>(createGrid(scene.getActiveCamera(), 0.1f));
+    scene.addModel(gridModel);
 
     // Создаем модели из мешей
     auto squareMesh = createSquareMesh(0.3f);
@@ -175,20 +230,39 @@ int main(int argc, char** args) {
                 scene.getActiveCamera().move(-deltaX, -deltaY);
                 lastMouseX = e.motion.x;
                 lastMouseY = e.motion.y;
+                
+                // Обновляем сетку при перетаскивании мышью
+                scene.getModel(0) = createGrid(scene.getActiveCamera(), 0.1f);
                 scene.render();
             }
             else if (e.type == SDL_MOUSEWHEEL) {
                 float zoomFactor = (e.wheel.y > 0) ? 1.1f : 0.9f;
                 scene.getActiveCamera().setZoom(scene.getActiveCamera().getZoom() * zoomFactor);
+                
+                // Обновляем сетку при зуме
+                scene.getModel(0) = createGrid(scene.getActiveCamera(), 0.1f);
                 scene.render();
             }
             else if (e.type == SDL_KEYDOWN) {
+                bool needGridUpdate = false;
                 switch (e.key.keysym.sym) {
                     // Управление камерой
-                    case SDLK_w: scene.getActiveCamera().move(0, -10); break;
-                    case SDLK_s: scene.getActiveCamera().move(0, 10); break;
-                    case SDLK_a: scene.getActiveCamera().move(-10, 0); break;
-                    case SDLK_d: scene.getActiveCamera().move(10, 0); break;
+                    case SDLK_w: 
+                        scene.getActiveCamera().move(0, -10);
+                        needGridUpdate = true;
+                        break;
+                    case SDLK_s: 
+                        scene.getActiveCamera().move(0, 10);
+                        needGridUpdate = true;
+                        break;
+                    case SDLK_a: 
+                        scene.getActiveCamera().move(-10, 0);
+                        needGridUpdate = true;
+                        break;
+                    case SDLK_d: 
+                        scene.getActiveCamera().move(10, 0);
+                        needGridUpdate = true;
+                        break;
 
                     // Выбор модели и фигуры
                     case SDLK_TAB:
@@ -250,6 +324,10 @@ int main(int argc, char** args) {
                             scene.getActiveCamera().setZoom(scene.getActiveCamera().getZoom() / 1.1f);
                         }
                         break;
+                }
+                if (needGridUpdate) {
+                    // Обновляем сетку при движении камеры
+                    scene.getModel(0) = createGrid(scene.getActiveCamera(), 0.1f);
                 }
                 scene.render();
             }
