@@ -1,0 +1,27 @@
+{
+  "configurations": [
+    {
+      "name": "windows-clang-x64",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/msys64/clang64/lib/**",
+        "C:/msys64/clang64/include/**"
+      ],
+      "compilerPath": "C:/msys64/clang64/bin/clang++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "windows-clang-x64",
+            "compilerPathInCppPropertiesJson": "C:\\msys64\\clang64\\bin\\clang.exe",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "e:/CodePrograms/CPP/OpenGL/**",
+                    "C:/msys64/clang64/lib/**",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+  "version": 4
+}
