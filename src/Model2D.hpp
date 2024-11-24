@@ -1,11 +1,10 @@
-
 #ifndef _MODEL_2D_HPP_
 #define _MODEL_2D_HPP_
-
 
 #include <SDL2/SDL.h>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include "Shape2D.hpp"
 #include "Camera2D.hpp"
@@ -47,11 +46,51 @@ public:
         scaleY = sy;
     }
 
+    // Shape management methods
+    void addShape(std::shared_ptr<Shape2D> shape) {
+        if (shape) {
+            shapes.push_back(shape);
+        }
+    }
+
+    void removeShape(const std::shared_ptr<Shape2D>& shape) {
+        auto it = std::find(shapes.begin(), shapes.end(), shape);
+        if (it != shapes.end()) {
+            shapes.erase(it);
+        }
+    }
+
+    void removeShapeAt(size_t index) {
+        if (index < shapes.size()) {
+            shapes.erase(shapes.begin() + index);
+        }
+    }
+
+    void clearShapes() {
+        shapes.clear();
+    }
+
     // Add shapes
     void addLine(float x1, float y1, float x2, float y2, Uint32 color, float thickness = 1.0f);
     void addCurve(float x1, float y1, float cx, float cy, float x2, float y2, Uint32 color);
 
-    // Draw the model
+    // Getters for shapes
+    size_t getShapeCount() const {
+        return shapes.size();
+    }
+
+    std::shared_ptr<Shape2D> getShape(size_t index) const {
+        if (index < shapes.size()) {
+            return shapes[index];
+        }
+        return nullptr;
+    }
+
+    const std::vector<std::shared_ptr<Shape2D>>& getShapes() const {
+        return shapes;
+    }
+
+    // Drawing method
     void draw(SDL_Surface* surface, Camera2D& camera);
 
     // Getters
