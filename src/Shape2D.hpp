@@ -1,7 +1,6 @@
 #ifndef _SHAPE_2D_HPP_
 #define _SHAPE_2D_HPP_
 
-#pragma once
 #include <SDL2/SDL.h>
 #include "Drawing.hpp"
 #include <cmath>

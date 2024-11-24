@@ -1,7 +1,6 @@
 #ifndef _DRAWING_HPP_
 #define _DRAWING_HPP_
 
-#pragma once
 #include <SDL2/SDL.h>
 #include <vector>
 #include <memory>

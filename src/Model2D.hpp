@@ -3,7 +3,6 @@
 #define _MODEL_2D_HPP_
 
 
-#pragma once
 #include <SDL2/SDL.h>
 #include <vector>
 #include <memory>

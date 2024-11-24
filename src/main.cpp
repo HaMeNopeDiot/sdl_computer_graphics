@@ -74,6 +74,7 @@ int main (int argc, char ** args) {
     model.addLine(-0.5f, -0.5f, 0.5f, 0.5f, 0xFF0000, 3.0f); // Red thick line
     model.addLine(0.5f, 0.5f, 1.0f, 1.0f, 0xFFFF00);         // Yellow line
     model.addCurve(-0.8f, 0.0f, 0.0f, 0.8f, 0.8f, 0.0f, 0xFFFF00); // Yellow curve
+    model.setRotation(0.0f);
 
     // Initial draw
     redraw_window(scr, camera, model);
