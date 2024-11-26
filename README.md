@@ -7,11 +7,11 @@ make clean && make && ./engine # Works only on Linux or MSYS CLANG64
 This is only what you needed.
 
 This project interacteable:
-WASD - move the model by X or Y
-QR   - move the model by Z
+WASD - move the model by X or Y \
+QR   - move the model by Z 
 
-Arrows - move the camera by X/Z
-PgUp/PgDown - move the camera by Y
+Arrows - move the camera by X/Z 
+PgUp/PgDown - move the camera by Y 
 
-RBM + Mouse - move camera by rotation (Left, Right, Up, Down)
-LBM + Mouse - move model by rotation
+RBM + Mouse - move camera by rotation (Left, Right, Up, Down) \
+LBM + Mouse - move model by rotation 
