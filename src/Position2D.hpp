@@ -1,6 +1,8 @@
 #ifndef _POSITION2D_HPP_
 #define _POSITION2D_HPP_
 
+#include <cmath>
+
 class Position2D {
 public:
     float x;
@@ -25,6 +27,17 @@ public:
         y = newY;
     }
 
+    void setX(float newX) { x = newX; }
+    void setY(float newY) { y = newY; }
+
+    float getX() const { return x; }
+    float getY() const { return y; }
+
+    void move(float dx, float dy) {
+        x += dx;
+        y += dy;
+    }
+
     // Vector operations
     Position2D operator+(const Position2D& other) const {
         return Position2D(x + other.x, y + other.y);
@@ -36,6 +49,10 @@ public:
 
     Position2D operator*(float scalar) const {
         return Position2D(x * scalar, y * scalar);
+    }
+
+    bool operator==(const Position2D& other) const {
+        return x == other.x && y == other.y;
     }
 };
 
