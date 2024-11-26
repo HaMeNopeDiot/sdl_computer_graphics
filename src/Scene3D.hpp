@@ -35,7 +35,10 @@ public:
 
     // Отрисовка всей сцены
     void render(SDL_Surface* targetSurface) {
-        clear();
+        if (!targetSurface) return;
+
+        // Очищаем поверхность светло-серым цветом
+        SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x11, 0x11, 0x11));
         
         // Отрисовка осей координат
         camera.drawAxes(surface);
@@ -56,5 +59,9 @@ public:
         }
         surface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
         camera.setScreenSize(width, height);
+    }
+
+    Camera3D& getCamera() {
+        return camera;
     }
 };

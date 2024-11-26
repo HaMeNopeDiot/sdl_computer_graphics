@@ -1,20 +1,39 @@
-#pragma once
+#ifndef _CAMERA_3D_HPP_
+#define _CAMERA_3D_HPP_
+
 #include "Matrix.hpp"
+#include "Position3D.hpp"
 #include <SDL2/SDL.h>
+
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 #include <cmath>
+#include <algorithm>
 
 class Camera3D {
 private:
-    float N, F;        // Ближняя и дальняя плоскости отсечения
     int W, H;          // Размеры экрана
+    float N, F;        // Ближняя и дальняя плоскости отсечения
     Matrix viewMatrix;
     Matrix projectionMatrix;
     Matrix screenMatrix;
+    Position3D position;  // Позиция камеры
+    float yaw = 0.0f;    // Поворот вокруг оси Y
+    float pitch = 0.0f;  // Поворот вокруг оси X
 
     void updateMatrices() {
         // Матрица вида (перемещает камеру в начало координат)
         viewMatrix = Matrix::identity(4);
-        viewMatrix.at(2, 3) = -5.0f;  // Отодвигаем камеру назад
+        
+        // Сначала применяем поворот по X (pitch), затем по Y (yaw)
+        Matrix rotation = Matrix::rotationX(pitch) * Matrix::rotationY(yaw);
+        
+        // Применяем перемещение
+        Matrix translation = Matrix::translation(-position.getX(), -position.getY(), -position.getZ());
+        
+        viewMatrix = rotation * translation;
         
         // Матрица проекции (перспективная)
         projectionMatrix = Matrix(4, 4);
@@ -44,7 +63,8 @@ public:
           N(0.1f), F(100.0f),
           viewMatrix(4, 4), 
           projectionMatrix(4, 4),
-          screenMatrix(4, 4)
+          screenMatrix(4, 4),
+          position(0.0f, 0.0f, 5.0f)  // Начальная позиция камеры
     {
         updateMatrices();
     }
@@ -149,4 +169,35 @@ public:
         H = height;
         updateMatrices();
     }
+
+    void rotate(float deltaYaw, float deltaPitch) {
+        yaw += deltaYaw;
+        pitch = std::max(float(-M_PI/2.0f + 0.1f), std::min(float(M_PI/2.0f - 0.1f), pitch + deltaPitch));
+        updateMatrices();
+    }
+
+    void move(float forward, float right, float up) {
+        // Вычисляем направление движения с учетом поворота камеры
+        float cosYaw = cos(yaw);
+        float sinYaw = sin(yaw);
+        float cosPitch = cos(pitch);
+        float sinPitch = sin(pitch);
+        
+        // Движение вперед/назад с учетом pitch
+        position.move(
+            -forward * sinYaw * cosPitch,
+            forward * sinPitch,
+            -forward * cosYaw * cosPitch
+        );
+        
+        // Движение вправо/влево (всегда горизонтальное)
+        position.move(right * cosYaw, 0.0f, -right * sinYaw);
+        
+        // Движение вверх/вниз (всегда вертикальное)
+        position.move(0.0f, up, 0.0f);
+        
+        updateMatrices();
+    }
 };
+
+#endif // _CAMERA_3D_HPP_

@@ -44,7 +44,8 @@ int main(int argc, char** args) {
 
     SDL_Event e;
     bool quit = false;
-    bool isDragging = false;
+    bool isLeftDragging = false;   // Для вращения куба
+    bool isRightDragging = false;  // Для управления камерой
     int lastMouseX = 0, lastMouseY = 0;
     float rotationX = 0.0f, rotationY = 0.0f;
 
@@ -65,34 +66,48 @@ int main(int argc, char** args) {
             }
             else if (e.type == SDL_MOUSEBUTTONDOWN) {
                 if (e.button.button == SDL_BUTTON_LEFT) {
-                    isDragging = true;
+                    isLeftDragging = true;
+                    lastMouseX = e.button.x;
+                    lastMouseY = e.button.y;
+                }
+                else if (e.button.button == SDL_BUTTON_RIGHT) {
+                    isRightDragging = true;
                     lastMouseX = e.button.x;
                     lastMouseY = e.button.y;
                 }
             }
             else if (e.type == SDL_MOUSEBUTTONUP) {
                 if (e.button.button == SDL_BUTTON_LEFT) {
-                    isDragging = false;
+                    isLeftDragging = false;
+                }
+                else if (e.button.button == SDL_BUTTON_RIGHT) {
+                    isRightDragging = false;
                 }
             }
-            else if (e.type == SDL_MOUSEMOTION && isDragging) {
+            else if (e.type == SDL_MOUSEMOTION) {
                 int deltaX = e.motion.x - lastMouseX;
                 int deltaY = e.motion.y - lastMouseY;
-                
-                // Готовимся к вращению
-                rotationY += deltaX * 0.01f;
-                rotationX += deltaY * 0.01f;
-                
-                cube->applyTransform(Matrix::identity(4));  // Сбрасываем трансформации
 
-                Position3D tmp_pos = cube->getPosition();
-                // Центрируем модель
-                cube->translate(-tmp_pos.getX(), -tmp_pos.getY(), -tmp_pos.getZ());        // Отодвигаем от камеры
-                // Вращаем модель
-                cube->rotateX(rotationX);                  // Применяем поворот по X
-                cube->rotateY(rotationY);                  // Применяем поворот по Y
-                // Возвращаем модель
-                cube->translate(tmp_pos.getX(), tmp_pos.getY(), tmp_pos.getZ());
+                if (isLeftDragging) {
+                    // Вращение куба
+                    rotationY += deltaX * 0.01f;
+                    rotationX += deltaY * 0.01f;
+                
+                    cube->applyTransform(Matrix::identity(4));  // Сбрасываем трансформации
+
+                    Position3D tmp_pos = cube->getPosition();
+                    // Центрируем модель
+                    cube->translate(-tmp_pos.getX(), -tmp_pos.getY(), -tmp_pos.getZ());
+                    // Вращаем модель
+                    cube->rotateX(rotationX);
+                    cube->rotateY(rotationY);
+                    // Возвращаем модель
+                    cube->translate(tmp_pos.getX(), tmp_pos.getY(), tmp_pos.getZ());
+                }
+                else if (isRightDragging) {
+                    // Вращение камеры
+                    scene.getCamera().rotate(deltaX * 0.01f, deltaY * 0.01f);
+                }
                 
                 lastMouseX = e.motion.x;
                 lastMouseY = e.motion.y;
@@ -101,7 +116,35 @@ int main(int argc, char** args) {
                 SDL_UpdateWindowSurface(window);
             }
             else if (e.type == SDL_KEYDOWN) {
+                float moveSpeed = 0.25f;
+                bool moved = false;
+                float forward = 0.0f, right = 0.0f, up = 0.0f;
+
                 switch (e.key.keysym.sym) {
+                    case SDLK_UP:
+                        forward = moveSpeed;
+                        moved = true;
+                        break;
+                    case SDLK_DOWN:
+                        forward = -moveSpeed;
+                        moved = true;
+                        break;
+                    case SDLK_LEFT:
+                        right = -moveSpeed;
+                        moved = true;
+                        break;
+                    case SDLK_RIGHT:
+                        right = moveSpeed;
+                        moved = true;
+                        break;
+                    case SDLK_PAGEUP:
+                        up = moveSpeed;
+                        moved = true;
+                        break;
+                    case SDLK_PAGEDOWN:
+                        up = -moveSpeed;
+                        moved = true;
+                        break;
                     case SDLK_w:
                         cube->translate(0.0f, -0.1f, 0.0f);
                         break;
@@ -121,8 +164,16 @@ int main(int argc, char** args) {
                         cube->translate(0.0f, 0.0f, -0.1f);
                         break;
                 }
-                scene.render(surface);
-                SDL_UpdateWindowSurface(window);
+
+                if (moved) {
+                    scene.getCamera().move(forward, right, up);
+                    scene.render(surface);
+                    SDL_UpdateWindowSurface(window);
+                }
+                else {
+                    scene.render(surface);
+                    SDL_UpdateWindowSurface(window);
+                }
             }
         }
     }
