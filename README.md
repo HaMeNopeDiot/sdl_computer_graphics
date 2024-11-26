@@ -10,7 +10,7 @@ This project interacteable:
 WASD - move the model by X or Y \
 QR   - move the model by Z 
 
-Arrows - move the camera by X/Z 
+Arrows - move the camera by X/Z \
 PgUp/PgDown - move the camera by Y 
 
 RBM + Mouse - move camera by rotation (Left, Right, Up, Down) \
