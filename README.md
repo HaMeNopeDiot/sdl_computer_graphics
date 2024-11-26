@@ -1,4 +1,4 @@
-##### Hello, this just education project
+## Hello, this just education project
 This project contains only project for practice in University. If this don't work or work incorrectly, this must be don't work
 If you want to get exe, from this code just install SDL2 lib and includes and write:
 ```
