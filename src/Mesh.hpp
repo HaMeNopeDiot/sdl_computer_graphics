@@ -2,12 +2,12 @@
 #define _MESH_HPP_
 
 #include <vector>
-#include "Position.hpp"
+#include "Position2D.hpp"
 
 class Mesh {
 private:
     // Матрица вершин (3×M), где каждый столбец - это однородные координаты вершины
-    std::vector<Position> vertices;
+    std::vector<Position2D> vertices;
     
     // Матрица рёбер (K×2), где каждая строка содержит индексы двух связанных вершин
     struct Edge {
@@ -22,8 +22,8 @@ public:
     Mesh() = default;
 
     // Добавление вершины (возвращает индекс добавленной вершины)
-    int addVertex(float x, float y, float z = 1.0f) {
-        vertices.emplace_back(x, y, z);
+    int addVertex(float x, float y) {
+        vertices.emplace_back(x, y);
         return vertices.size() - 1;
     }
 
@@ -35,7 +35,7 @@ public:
     }
 
     // Получение вершины по индексу
-    const Position& getVertex(int index) const {
+    const Position2D& getVertex(int index) const {
         return vertices[index];
     }
 
@@ -61,7 +61,7 @@ public:
     }
 
     // Получение всех вершин
-    const std::vector<Position>& getVertices() const {
+    const std::vector<Position2D>& getVertices() const {
         return vertices;
     }
 

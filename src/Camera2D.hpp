@@ -2,12 +2,12 @@
 #define _CAMERA_2D_HPP_
 
 #include <SDL2/SDL.h>
-#include "Position.hpp"
+#include "Position2D.hpp"
 #include <algorithm>
 
 class Camera2D {
 private:
-    Position position;  // Camera position in normalized space
+    Position2D position;  // Camera position in normalized space
     float zoom;        // Camera zoom level
     int screenWidth;   // Screen width
     int screenHeight;  // Screen height

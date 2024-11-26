@@ -21,8 +21,8 @@ Model2D createModelFromMesh(const Mesh& mesh, uint32_t color = 0xFFFFFF, float l
     const auto& vertices = mesh.getVertices();
     
     for (const auto& edge : edges) {
-        const Position& v1 = vertices[edge.vertex1];
-        const Position& v2 = vertices[edge.vertex2];
+        const Position2D& v1 = vertices[edge.vertex1];
+        const Position2D& v2 = vertices[edge.vertex2];
         auto line = std::make_shared<Line2D>(v1, v2, color, lineWidth);
         model.addShape(line);
     }
@@ -95,8 +95,8 @@ Model2D createGrid(Camera2D& camera, float step = 0.1f) {
     // Вертикальные линии
     for (float x = minX; x <= maxX; x += step) {
         auto line = std::make_shared<Line2D>(
-            Position(x, minY),
-            Position(x, maxY),
+            Position2D(x, minY),
+            Position2D(x, maxY),
             gridColor,
             lineWidth
         );
@@ -106,8 +106,8 @@ Model2D createGrid(Camera2D& camera, float step = 0.1f) {
     // Горизонтальные линии
     for (float y = minY; y <= maxY; y += step) {
         auto line = std::make_shared<Line2D>(
-            Position(minX, y),
-            Position(maxX, y),
+            Position2D(minX, y),
+            Position2D(maxX, y),
             gridColor,
             lineWidth
         );

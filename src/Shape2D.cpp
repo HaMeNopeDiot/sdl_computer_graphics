@@ -1,7 +1,11 @@
 #include "Shape2D.hpp"
 
-// Helper function to rotate a Position
-void rotatePosition(Position& pos, float degrees) {
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
+// Helper function to rotate a Position2D
+void rotatePosition(Position2D& pos, float degrees) {
     float radians = degrees * M_PI / 180.0f;
     float cosA = cos(radians);
     float sinA = sin(radians);
@@ -13,8 +17,8 @@ void rotatePosition(Position& pos, float degrees) {
 
 void Line2D::draw(SDL_Surface* surface, Camera2D& camera, float modelX, float modelY, float rotation, float scaleX, float scaleY) {
     // Create transformed positions
-    Position transformedStart(start.x * scaleX, start.y * scaleY);
-    Position transformedEnd(end.x * scaleX, end.y * scaleY);
+    Position2D transformedStart(start.x * scaleX, start.y * scaleY);
+    Position2D transformedEnd(end.x * scaleX, end.y * scaleY);
 
     // Rotate points
     rotatePosition(transformedStart, rotation);
@@ -33,9 +37,9 @@ void Line2D::draw(SDL_Surface* surface, Camera2D& camera, float modelX, float mo
 
 void Curve2D::draw(SDL_Surface* surface, Camera2D& camera, float modelX, float modelY, float rotation, float scaleX, float scaleY) {
     // Create transformed positions
-    Position transformedStart(start.x * scaleX, start.y * scaleY);
-    Position transformedControl(control.x * scaleX, control.y * scaleY);
-    Position transformedEnd(end.x * scaleX, end.y * scaleY);
+    Position2D transformedStart(start.x * scaleX, start.y * scaleY);
+    Position2D transformedControl(control.x * scaleX, control.y * scaleY);
+    Position2D transformedEnd(end.x * scaleX, end.y * scaleY);
 
     // Rotate points
     rotatePosition(transformedStart, rotation);
@@ -54,5 +58,6 @@ void Curve2D::draw(SDL_Surface* surface, Camera2D& camera, float modelX, float m
     drawQuadraticCurve(surface, camera, 
                        transformedStart.x, transformedStart.y,
                        transformedControl.x, transformedControl.y,
-                       transformedEnd.x, transformedEnd.y, color);
+                       transformedEnd.x, transformedEnd.y,
+                       color);
 }
