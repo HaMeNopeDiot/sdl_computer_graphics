@@ -2,6 +2,7 @@
 #include "Scene3D.hpp"
 #include <cmath>
 #include <memory>
+#include <iostream>
 
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 1024;
@@ -89,18 +90,14 @@ int main(int argc, char** args) {
                 int deltaY = e.motion.y - lastMouseY;
 
                 if (isLeftDragging) {
-                    // Вращение куба
-                    rotationY += deltaX * 0.01f;
-                    rotationX += deltaY * 0.01f;
-                
                     cube->applyTransform(Matrix::identity(4));  // Сбрасываем трансформации
 
                     Position3D tmp_pos = cube->getPosition();
                     // Центрируем модель
                     cube->translate(-tmp_pos.getX(), -tmp_pos.getY(), -tmp_pos.getZ());
                     // Вращаем модель
-                    cube->rotateX(rotationX);
-                    cube->rotateY(rotationY);
+                    cube->rotateX(deltaY * 0.0025f);
+                    cube->rotateY(deltaX * 0.0025f);
                     // Возвращаем модель
                     cube->translate(tmp_pos.getX(), tmp_pos.getY(), tmp_pos.getZ());
                 }

@@ -16,45 +16,57 @@ class Camera3D {
 private:
     int W, H;          // Размеры экрана
     float N, F;        // Ближняя и дальняя плоскости отсечения
+    // Матрица вида - преобразует координаты из мирового пространства в пространство камеры
     Matrix viewMatrix;
+    // Матрица проекции - преобразует координаты из пространства камеры в нормализованные координаты устройства
     Matrix projectionMatrix;
+    // Матрица экрана - преобразует нормализованные координаты в экранные координаты
     Matrix screenMatrix;
     Position3D position;  // Позиция камеры
     float yaw = 0.0f;    // Поворот вокруг оси Y
     float pitch = 0.0f;  // Поворот вокруг оси X
 
     void updateMatrices() {
-        // Матрица вида (перемещает камеру в начало координат)
+        // Матрица вида (View Matrix)
+        // Преобразует координаты из мирового пространства в пространство камеры
+        // Это достигается путем перемещения камеры в начало координат и поворота сцены в противоположном направлении
         viewMatrix = Matrix::identity(4);
         
-        // Сначала применяем поворот по X (pitch), затем по Y (yaw)
+        // Создаем матрицу поворота, комбинируя повороты вокруг осей:
+        // pitch - поворот вокруг оси X (наклон камеры вверх-вниз)
+        // yaw - поворот вокруг оси Y (поворот камеры влево-вправо)
         Matrix rotation = Matrix::rotationX(pitch) * Matrix::rotationY(yaw);
         
-        // Применяем перемещение
+        // Создаем матрицу перемещения
+        // Используем отрицательные координаты, так как перемещаем сцену в противоположном направлении
         Matrix translation = Matrix::translation(-position.getX(), -position.getY(), -position.getZ());
         
+        // Итоговая матрица вида = поворот * перемещение
         viewMatrix = rotation * translation;
         
-        // Матрица проекции (перспективная)
+        // Матрица перспективной проекции (Perspective Projection Matrix)
+        // Преобразует координаты из пространства камеры в нормализованные координаты устройства
         projectionMatrix = Matrix(4, 4);
-        float aspect = (float)W / H;
-        float fov = 60.0f * M_PI / 180.0f;  // 60 градусов в радианы
-        float tanHalfFov = tan(fov / 2.0f);
+        float aspect = (float)W / H;  // Соотношение сторон экрана
+        float fov = 60.0f * M_PI / 180.0f;  // Угол обзора (Field of View) в радианах
+        float tanHalfFov = tan(fov / 2.0f);  // Тангенс половинного угла обзора
         
-        projectionMatrix.at(0, 0) = 1.0f / (aspect * tanHalfFov);
-        projectionMatrix.at(1, 1) = 1.0f / tanHalfFov;
-        projectionMatrix.at(2, 2) = -(F + N) / (F - N);
-        projectionMatrix.at(2, 3) = -(2.0f * F * N) / (F - N);
-        projectionMatrix.at(3, 2) = -1.0f;
+        // Заполняем матрицу проекции:
+        projectionMatrix.at(0, 0) = 1.0f / (aspect * tanHalfFov);  // Масштаб по X с учетом aspect ratio           |                                                                                                     |   
+        projectionMatrix.at(1, 1) = 1.0f / tanHalfFov;             // Масштаб по Y                                 | 1.0f / (aspect * tanHalfFov)            0                    0                            0         |
+        projectionMatrix.at(2, 2) = -(F + N) / (F - N);            // Масштаб по Z                                 |                0                 1.0f/tanHalfFov             0                            0         |
+        projectionMatrix.at(2, 3) = -(2.0f * F * N) / (F - N);     // Перенос по Z                                 |                0                        0           -(F + N) / (F - N)    -(2.0f * F * N) / (F - N) |
+        projectionMatrix.at(3, 2) = -1.0f;                         // W-координата для перспективного деления      |                0                        0                    1                            0         |     
         
-        // Матрица экрана (преобразует в экранные координаты)
+        // Матрица экрана (Screen Matrix)
+        // Преобразует нормализованные координаты устройства в экранные координаты
         screenMatrix = Matrix(4, 4);
-        screenMatrix.at(0, 0) = W / 2.0f;
-        screenMatrix.at(1, 1) = -H / 2.0f;
-        screenMatrix.at(0, 3) = W / 2.0f;
-        screenMatrix.at(1, 3) = H / 2.0f;
-        screenMatrix.at(2, 2) = 1.0f;
-        screenMatrix.at(3, 3) = 1.0f;
+        screenMatrix.at(0, 0) = W / 2.0f;    // Масштаб по X                                                |                                  |
+        screenMatrix.at(1, 1) = -H / 2.0f;   // Масштаб по Y (отрицательный, так как Y растет вниз)         | W / 2.0f     0      0   W / 2.0f | 
+        screenMatrix.at(0, 3) = W / 2.0f;    // Смещение по X в центр экрана                                |    0     -H / 2.0f  0   H / 2.0f | 
+        screenMatrix.at(1, 3) = H / 2.0f;    // Смещение по Y в центр экрана                                |    0         0      1      0     | 
+        screenMatrix.at(2, 2) = 1.0f;        // Сохраняем Z-координату                                      |    0         0      0      1     |   
+        screenMatrix.at(3, 3) = 1.0f;        // W-компонента                                                |                                  |  
     }
 
 public:

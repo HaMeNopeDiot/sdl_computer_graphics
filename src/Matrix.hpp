@@ -67,10 +67,10 @@ public:
         Matrix m = identity(4);
         float c = cos(angle);
         float s = sin(angle);
-        m.at(1, 1) = c;
-        m.at(1, 2) = -s;
-        m.at(2, 1) = s;
-        m.at(2, 2) = c;
+        m.at(1, 1) = c;         /* | 1    0    0   0 | */
+        m.at(1, 2) = -s;        /* | 0    c   -s   0 | */
+        m.at(2, 1) = s;         /* | 0    s    c   0 | */
+        m.at(2, 2) = c;         /* | 0    0    0   1 | */
         return m;
     }
 
@@ -79,10 +79,10 @@ public:
         Matrix m = identity(4);
         float c = cos(angle);
         float s = sin(angle);
-        m.at(0, 0) = c;
-        m.at(0, 2) = s;
-        m.at(2, 0) = -s;
-        m.at(2, 2) = c;
+        m.at(0, 0) = c;         /* | c    0    s   0 | */
+        m.at(0, 2) = s;         /* | 0    1    0   0 | */
+        m.at(2, 0) = -s;        /* |-s    s    c   0 | */
+        m.at(2, 2) = c;         /* | 0    0    0   1 | */
         return m;
     }
 
