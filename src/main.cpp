@@ -93,6 +93,7 @@ int main(int argc, char** args) {
                     cube->applyTransform(Matrix::identity(4));  // Сбрасываем трансформации
 
                     Position3D tmp_pos = cube->getPosition();
+                    /*
                     // Центрируем модель
                     cube->translate(-tmp_pos.getX(), -tmp_pos.getY(), -tmp_pos.getZ());
                     // Вращаем модель
@@ -100,6 +101,16 @@ int main(int argc, char** args) {
                     cube->rotateY(deltaX * 0.0025f);
                     // Возвращаем модель
                     cube->translate(tmp_pos.getX(), tmp_pos.getY(), tmp_pos.getZ());
+                    */
+
+                    // cube->translate(-tmp_pos.getX() - 0.25f, -tmp_pos.getY(), -tmp_pos.getZ());
+                    // cube->rotateY(deltaX * 0.0025f);
+                    // cube->translate(tmp_pos.getX() + 0.25f, tmp_pos.getY(), tmp_pos.getZ());
+
+                    cube->translate(-tmp_pos.getX() - 0.25f, -tmp_pos.getY() - 0.25f, -tmp_pos.getZ() - 0.25f);
+                    cube->rotateY(deltaX * 0.0025f);
+                    cube->rotateX(deltaY * 0.0025f);
+                    cube->translate(tmp_pos.getX() + 0.25f, tmp_pos.getY() + 0.25f, tmp_pos.getZ() + 0.25f);
                 }
                 else if (isRightDragging) {
                     // Вращение камеры
@@ -108,6 +119,20 @@ int main(int argc, char** args) {
                 
                 lastMouseX = e.motion.x;
                 lastMouseY = e.motion.y;
+                
+                scene.render(surface);
+                SDL_UpdateWindowSurface(window);
+            }
+            else if (e.type == SDL_MOUSEWHEEL) {
+                float scale_factor = (e.wheel.y > 0) ? 1.1f : 0.9f;
+                cube->applyTransform(Matrix::identity(4));
+                Position3D tmp_pos = cube->getPosition();
+
+                
+
+                cube->translate(-tmp_pos.getX(), -tmp_pos.getY(), -tmp_pos.getZ());
+                cube->scale(scale_factor, scale_factor, scale_factor);
+                cube->translate(tmp_pos.getX(), tmp_pos.getY(), tmp_pos.getZ());
                 
                 scene.render(surface);
                 SDL_UpdateWindowSurface(window);

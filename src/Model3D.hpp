@@ -14,6 +14,9 @@ private:
     Matrix transformMatrix;       // Матрица накопленных преобразований
     std::vector<std::pair<int, int>> edges;  // Рёбра модели
     Position3D position;         // Позиция модели в 3D пространстве
+    float model_size_X;              // Размер модели по X
+    float model_size_Y;              // Размер модели по Y
+    float model_size_Z;              // Размер модели по Z
 
 public:
     Model3D(size_t vertexCount) 
@@ -89,6 +92,9 @@ public:
     static std::shared_ptr<Model3D> createCube(float size = 1.0f) {
         auto cube = std::make_shared<Model3D>(8);
         float halfSize = size / 2.0f;
+        cube->model_size_X = size;
+        cube->model_size_Y = size;
+        cube->model_size_Z = size;
 
         // Вершины куба
         cube->setVertex(0, -halfSize, -halfSize, -halfSize);  // Задняя нижняя левая
@@ -144,6 +150,9 @@ public:
     // Масштабирование
     void scale(float sx, float sy, float sz) {
         applyTransform(Matrix::scaling(sx, sy, sz));
+        this->model_size_X *= sx;
+        this->model_size_Y *= sy;
+        this->model_size_Z *= sz;
     }
 
     // Поворот вокруг оси X
