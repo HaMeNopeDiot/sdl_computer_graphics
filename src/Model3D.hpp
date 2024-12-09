@@ -6,6 +6,7 @@
 #include "Camera3D.hpp"
 #include <vector>
 #include <memory>
+#include <iostream>
 
 class Model3D {
 private:
@@ -14,9 +15,19 @@ private:
     Matrix transformMatrix;       // Матрица накопленных преобразований
     std::vector<std::pair<int, int>> edges;  // Рёбра модели
     Position3D position;         // Позиция модели в 3D пространстве
+
+    float modelSizeXs;
+    float modelSizeYs;
+    float modelSizeZs;
+    // SCALE
     float model_size_X;              // Размер модели по X
     float model_size_Y;              // Размер модели по Y
     float model_size_Z;              // Размер модели по Z
+
+    // ROTAT
+    float rotationX;
+    float rotationY;
+    float rotationZ;
 
 public:
     Model3D(size_t vertexCount) 
@@ -53,6 +64,14 @@ public:
         updateTransformedVertices();
     }
 
+    Position3D getVertexPos(int index) {
+        return Position3D(vertices.at(0, index), vertices.at(1, index), vertices.at(2, index));
+    }
+
+    Position3D getTransformedVertexPos(int index) {
+        return Position3D(transformedVertices.at(0, index), transformedVertices.at(1, index), transformedVertices.at(2, index));
+    }
+
     // Обновление преобразованных вершин
     void updateTransformedVertices() {
         for (size_t i = 0; i < vertices.getCols(); ++i) {
@@ -87,14 +106,45 @@ public:
             camera.drawLine(surface, v1, v2, color);
         }
     }
+    
+    float getRotationX() const { return rotationX; }
+    float getRotationY() const { return rotationY; }
+    float getRotationZ() const { return rotationZ; }
+
+    float get_model_size_X() const { return model_size_X; }
+    float get_model_size_Y() const { return model_size_Y; }
+    float get_model_size_Z() const { return model_size_Z; }
+
+    float getModelSizeXs() const { return modelSizeXs; }
+    float getModelSizeYs() const { return modelSizeYs; }
+    float getModelSizeZs() const { return modelSizeZs; }
+
+    // Получить текущую матрицу трансформации
+    Matrix getTransformMatrix() const {
+        return transformMatrix;
+    }
+
+    // Установить матрицу трансформации
+    void setTransformMatrix(const Matrix& matrix) {
+        transformMatrix = matrix;
+        updateTransformedVertices();
+    }
 
     // Создание куба
     static std::shared_ptr<Model3D> createCube(float size = 1.0f) {
         auto cube = std::make_shared<Model3D>(8);
         float halfSize = size / 2.0f;
-        cube->model_size_X = size;
-        cube->model_size_Y = size;
-        cube->model_size_Z = size;
+        cube->model_size_X = 1.0f;
+        cube->model_size_Y = 1.0f;
+        cube->model_size_Z = 1.0f;
+
+        cube->modelSizeXs = size;
+        cube->modelSizeYs = size;
+        cube->modelSizeZs = size;
+
+        cube->rotationX = 0.0f;
+        cube->rotationY = 0.0f;
+        cube->rotationZ = 0.0f;
 
         // Вершины куба
         cube->setVertex(0, -halfSize, -halfSize, -halfSize);  // Задняя нижняя левая
@@ -158,16 +208,50 @@ public:
     // Поворот вокруг оси X
     void rotateX(float angle) {
         applyTransform(Matrix::rotationX(angle));
+        rotationX += angle * 1.0f;
     }
 
     // Поворот вокруг оси Y
     void rotateY(float angle) {
         applyTransform(Matrix::rotationY(angle));
+        rotationY += angle * 1.0f;
     }
 
     // Поворот вокруг оси Z
     void rotateZ(float angle) {
         applyTransform(Matrix::rotationZ(angle));
+        rotationZ += angle * 1.0f;
+    }
+
+    // Поворот вокруг оси X
+    void rotateX(float cos, float sin) {
+        applyTransform(Matrix::rotationX(cos, sin));
+        // rotationX += angle * 1.0f;
+    }
+
+    // Поворот вокруг оси Y
+    void rotateY(float cos, float sin) {
+        applyTransform(Matrix::rotationY(cos, sin));
+        // rotationY += angle * 1.0f;
+    }
+
+    // Поворот вокруг оси Z
+    void rotateZ(float cos, float sin) {
+        applyTransform(Matrix::rotationZ(cos, sin));
+        // rotationZ += angle * 1.0f;
+    }
+
+
+    void reflectX() {
+        applyTransform(Matrix::reflectZ());
+    }
+    
+    void reflectY() {
+        applyTransform(Matrix::reflectZ());
+    }
+
+    void reflectZ() {
+        applyTransform(Matrix::reflectZ());
     }
 };
 
