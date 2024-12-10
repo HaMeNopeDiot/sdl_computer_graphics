@@ -4,7 +4,9 @@
 #include <memory>
 #include <iostream>
 
-bool jopa = false;
+#include "RotationAngle.hpp"
+
+bool debug = false;
 
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 1024;
@@ -93,7 +95,7 @@ int main(int argc, char** args) {
 
                 if (isLeftDragging) {
                     if(isShiftPressed) {
-                        if(!jopa) { 
+                        if(!debug) { 
                             // Получаем текущие параметры куба
                             float scale_x = cube->get_model_size_X();
                             float scale_y = cube->get_model_size_Y();
@@ -103,7 +105,6 @@ int main(int argc, char** args) {
                             float yOffset = cube->getModelSizeYs() / 2.0f;
                             float zOffset = cube->getModelSizeZs() / 2.0f;
                             Position3D tmp_pos = cube->getPosition();
-                            std::cout << "CENETER: " << tmp_pos.getX() << " " << tmp_pos.getY() << " " << tmp_pos.getZ() << "\n";
 
                             
                             // Переносим в центр координат и масштабируем к единичному размеру
@@ -111,114 +112,63 @@ int main(int argc, char** args) {
                             cube->translate(-tmp_pos.getX() + xOffset, 
                                             -tmp_pos.getY() - yOffset, 
                                             -tmp_pos.getZ() + zOffset);
-
-
-                            
-                            std::cout<< "Vertex Origin" << std::endl;
-                            for(int i = 0; i < 8; i++) {
-                                Position3D p_tmp = cube->getVertexPos(i);
-                                std::cout << i << ": ";
-                                p_tmp.printPos(xOffset, -yOffset, zOffset);
-                            }
-
-                            std::cout << "Vertex Transformed" << std::endl;
-                            for(size_t i = 0; i < 8; i++) {
-                                Position3D p_tmp = cube->getTransformedVertexPos(i);
-                                std::cout << i << ": ";
-                                p_tmp.printPos();
-                            }
-
+                            // Положим веришну <3> в начало координат
                             Position3D p1_origin = cube->getTransformedVertexPos(3);
-                            p1_origin.printPos();
                             cube->translate(-p1_origin.getX(), -p1_origin.getY(), -p1_origin.getZ()); 
+
+                            // Вычисляем угол поворота по Х
                             Position3D p2_origin = cube->getTransformedVertexPos(2);
-                            p2_origin.printPos();
-
-                            float p2X = p2_origin.getX();
-                            float p2Y = p2_origin.getY();
-                            float p2Z = p2_origin.getZ();
                             
-                            
-                            float AB = (sqrt(pow(p2X , 2) + pow(p2Y , 2) + pow(p2Z , 2)));
-
-                            float cosAlpha = (p2Y * 1.0f) / (sqrt(pow(p2Z, 2) + pow(p2Y, 2)));
-                            float sinAlpha = (p2Z * 1.0f) / (sqrt(pow(p2Z, 2) + pow(p2Y, 2)));
-
-                            std::cout<< "COS: " << cosAlpha << "SIN: " << sinAlpha << '\n';
-
+                            RotationAngle angleAlpha;
+                            angleAlpha.calculateRotationAngleYZ(p2_origin);
+                            float cosAlpha = angleAlpha.getCos();
+                            float sinAlpha = angleAlpha.getSin();
+                            // Осуществляем поворот по оси ОХ
                             cube->rotateX(-cosAlpha, sinAlpha);
-                            std::cout << "MY: ";
+
+                            // Вычисляем угол поворота по Z
                             Position3D p3_origin = cube->getTransformedVertexPos(2);
-                            p3_origin.printPos();
-
-                            std::cout << "Vertex Transformed" << std::endl;
-                            for(size_t i = 0; i < 8; i++) {
-                                Position3D p_tmp = cube->getTransformedVertexPos(i);
-                                std::cout << i << ": ";
-                                p_tmp.printPos();
-                            }
-
-                            float p3X = p3_origin.getX();
-                            float p3Y = p3_origin.getY();
-                            float p3Z = p3_origin.getZ();
-
-                            float cosBetta = (p3X * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
-                            float sinBetta = (p3Y * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
                             
+                            RotationAngle angleBetta;
+                            angleBetta.calculateRotationAngleXY(p3_origin);
+                            float cosBetta = angleBetta.getCos();
+                            float sinBetta = angleBetta.getSin();
+                            // Осуществляем поворот по оси ОZ
                             cube->rotateZ(cosBetta, -sinBetta);
                             
-                            
-
-                            lastMouseX = e.motion.x;
-                            lastMouseY = e.motion.y;
-                            std::cout << "MYX: ";
-                            Position3D p4_origin = cube->getTransformedVertexPos(2);
-                            p4_origin.printPos();
-
-                            std::cout << "Vertex Transformed" << std::endl;
-                            for(size_t i = 0; i < 8; i++) {
-                                Position3D p_tmp = cube->getTransformedVertexPos(i);
-                                std::cout << i << ": ";
-                                p_tmp.printPos();
-                            }
-
+                            // Вычисляем угол поворота по X
                             Position3D p0_origin = cube->getTransformedVertexPos(0);
-                            float p0X = p0_origin.getX();
-                            float p0Y = p0_origin.getY();
-                            float p0Z = p0_origin.getZ();
                             
-                            float cosGamma = (p0Y * 1.0f) / (sqrt(pow(p0Z, 2) + pow(p0Y, 2)));
-                            float sinGamma = (p0Z * 1.0f) / (sqrt(pow(p0Z, 2) + pow(p0Y, 2)));
+                            RotationAngle angleGamma;
+                            angleGamma.calculateRotationAngleYZ(p0_origin);
+                            float cosGamma = angleGamma.getCos();
+                            float sinGamma = angleGamma.getSin();
 
-                            std::cout<< "COS: " << cosGamma << "SIN: " << sinGamma << '\n';
-
-                            
-
-                            std::cout << "Vertex Transformed" << std::endl;
-                            for(size_t i = 0; i < 8; i++) {
-                                Position3D p_tmp = cube->getTransformedVertexPos(i);
-                                std::cout << i << ": ";
-                                p_tmp.printPos();
-                            }
-
+                            // Осуществляем поворот по оси ОХ
                             cube->rotateX(-cosGamma, sinGamma);
-                            jopa = false;
 
+                            // Поворачиваем куб вокруг своего ребра
                             cube->rotateX(deltaX * 0.0025f);
 
+                            // Возвращаем куб в исходное положение по поворотам
                             cube->rotateX(-cosGamma, -sinGamma);
                             cube->rotateZ(cosBetta, sinBetta);
                             cube->rotateX(-cosAlpha, -sinAlpha);
-
+                            // Возвращаем куб в исходное положение по координатам
                             cube->translate(p1_origin.getX(), p1_origin.getY(), p1_origin.getZ()); 
                             cube->translate(tmp_pos.getX() - xOffset, 
                                             tmp_pos.getY() + yOffset, 
                                             tmp_pos.getZ() - zOffset);
+                            // Вовзращаем кубу исходный размер
                             cube->scale(scale_x, scale_y, scale_z);
+
+                            
+                            debug = false;
                         }
-                        else {
-                            // cube->rotateX(deltaX * 0.0025f);
-                        }
+                        
+                        lastMouseX = e.motion.x;
+                        lastMouseY = e.motion.y;
+
                         
                         scene.render(surface);
                         SDL_UpdateWindowSurface(window);

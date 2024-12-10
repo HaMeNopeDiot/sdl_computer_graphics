@@ -1,4 +1,6 @@
-#pragma once
+# ifndef _MATRIX_HPP_
+#define _MATRIX_HPP_
+
 #include <vector>
 #include <cmath>
 
@@ -147,3 +149,5 @@ public:
     size_t getRows() const { return rows; }
     size_t getCols() const { return cols; }
 };
+
+#endif /* _MATRIX_HPP_ */
