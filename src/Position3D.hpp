@@ -2,6 +2,8 @@
 #define _POSITION3D_HPP_
 #include "Position2D.hpp"
 
+#include <iostream>
+
 class Position3D : public Position2D {
 private:
     float z;
@@ -51,6 +53,10 @@ public:
             setY(getY() / length);
             z /= length;
         }
+    }
+
+    void printPos(float xOffset = 0.0f, float yOffset = 0.0f, float zOffset = 0.0f) {
+        std::cout << "POS = X: " << getX() + xOffset << " Y: " << getY() + yOffset << " Z: " << getZ() + zOffset << std::endl;
     }
 };
 

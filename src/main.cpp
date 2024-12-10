@@ -98,62 +98,107 @@ int main(int argc, char** args) {
                             float scale_x = cube->get_model_size_X();
                             float scale_y = cube->get_model_size_Y();
                             float scale_z = cube->get_model_size_Z();
-                            float scale_x_s = cube->getModelSizeXs();
-                            float scale_y_s = cube->getModelSizeYs();
-                            float scale_z_s = cube->getModelSizeZs();
+
+                            float xOffset = cube->getModelSizeXs() / 2.0f;
+                            float yOffset = cube->getModelSizeYs() / 2.0f;
+                            float zOffset = cube->getModelSizeZs() / 2.0f;
                             Position3D tmp_pos = cube->getPosition();
                             std::cout << tmp_pos.getX() << " " << tmp_pos.getY() << " " << tmp_pos.getZ() << "\n";
 
                             
                             // Переносим в центр координат и масштабируем к единичному размеру
-                            
                             cube->scale(1.0f / scale_x, 1.0f / scale_y, 1.0f / scale_z);
-                            cube->translate(-tmp_pos.getX() - scale_x_s / 2, 
-                                            -tmp_pos.getY() - scale_y_s / 2, 
-                                            -tmp_pos.getZ() + scale_z_s / 2);
+                            cube->translate(-tmp_pos.getX() + xOffset, 
+                                            -tmp_pos.getY() - yOffset, 
+                                            -tmp_pos.getZ() + zOffset);
 
-                            Position3D tmp_pos1 = cube->getPosition();
-                            std::cout << tmp_pos1.getX() << " " << tmp_pos1.getY() << " " << tmp_pos1.getZ() << "\n";
+
+                            
+                            std::cout<< "Vertex Origin" << std::endl;
+                            for(int i = 0; i < 8; i++) {
+                                Position3D p_tmp = cube->getVertexPos(i);
+                                std::cout << i << ": ";
+                                p_tmp.printPos(xOffset, -yOffset, zOffset);
+                            }
+
+                            std::cout << "Vertex Transformed" << std::endl;
+                            for(size_t i = 0; i < 8; i++) {
+                                Position3D p_tmp = cube->getTransformedVertexPos(i);
+                                std::cout << i << ": ";
+                                p_tmp.printPos();
+                            }
+
+                            Position3D p1_origin = cube->getTransformedVertexPos(3);
+                            p1_origin.printPos();
+                            cube->translate(-p1_origin.getX(), -p1_origin.getY(), -p1_origin.getZ()); 
+                            Position3D p2_origin = cube->getTransformedVertexPos(2);
+                            p2_origin.printPos();
+
+                            float p2X = p2_origin.getX();
+                            float p2Y = p2_origin.getY();
+                            float p2Z = p2_origin.getZ();
+                            
+                            
+                            float AB = (sqrt(pow(p2X , 2) + pow(p2Y , 2) + pow(p2Z , 2)));
+
+                            float cosAlpha = (p2Y * 1.0f) / (sqrt(pow(p2Z, 2) + pow(p2Y, 2)));
+                            float sinAlpha = (p2Z * 1.0f) / (sqrt(pow(p2Z, 2) + pow(p2Y, 2)));
+
+                            std::cout<< "COS: " << cosAlpha << "SIN: " << sinAlpha << '\n';
+
+                            cube->rotateX(-cosAlpha, sinAlpha);
+                            std::cout << "MY: ";
+                            Position3D p3_origin = cube->getTransformedVertexPos(2);
+                            p3_origin.printPos();
+
+                            std::cout << "Vertex Transformed" << std::endl;
+                            for(size_t i = 0; i < 8; i++) {
+                                Position3D p_tmp = cube->getTransformedVertexPos(i);
+                                std::cout << i << ": ";
+                                p_tmp.printPos();
+                            }
+
+                            float p3X = p3_origin.getX();
+                            float p3Y = p3_origin.getY();
+                            float p3Z = p3_origin.getZ();
+
+                            float sinBetta = (p3X * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
+                            float cosBetta = (p3Y * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
+                            
+                            cube->rotateZ(-cosBetta, -sinBetta);
+                            
                             
 
-                            Position3D T_pos = cube->getTransformedVertexPos(6);
-                            std::cout<< "X: " << T_pos.getX() << " Y: " << T_pos.getY() << " Z: " << T_pos.getZ() << '\n';
-                            
-                            float A = T_pos.getX();
-                            float B = T_pos.getY();
-                            float C = T_pos.getZ();
-
-                            float distance = (sqrt(pow(A,2) + pow(B,2) + pow(C,2)));
-
-                            float cosAlpha = (A * 1.0f) / distance;
-                            float sinAlpha = (sqrt(pow(B, 2) + pow(C, 2)) * 1.0f) / distance;
-
-                            float cosBetta = (B * 1.0f) / (sqrt(pow(B,2) + pow(C,2)));
-                            float sinBetta = (C * 1.0f) / (sqrt(pow(B,2) + pow(C,2)));
-                            cube->rotateZ(-cosAlpha, -sinAlpha);
-                            cube->rotateX(-cosBetta, -sinBetta);
-                            std::cout << "sin: " << sinAlpha << " cos: " << cosAlpha << '\n';
-                            std::cout << "sin: " << sinBetta << " cos: " << cosBetta << '\n';
-                            // cube->rotateY(-cosZ, -sinZ);
-                            jopa = false;
-                            //cube->rotateZ(-cosB, -sinB);
-                            //cube->rotateZ(cosA, sinA);
-                            // Выполняем поворот вокруг оси X
-                            // cube->rotateX(deltaX * 0.0025f);
-                            // Position3D tmp_pos1 = cube->getPosition();
-                            Position3D tmp_pos2 = cube->getVertexPos(6);
-                            Position3D tmp_pos3 = cube->getTransformedVertexPos(6);
-                            std::cout<< "X: " << tmp_pos2.getX() << " Y: " << tmp_pos2.getY() << " Z: " << tmp_pos2.getZ() << '\n';
-                            std::cout<< "X: " << tmp_pos3.getX() << " Y: " << tmp_pos3.getY() << " Z: " << tmp_pos3.getZ() << '\n';
-
-                            // // // Возвращаем позицию
-                            // cube->translate(tmp_pos.getX() + scale_x_s / 2, 
-                            //                 tmp_pos.getY() + scale_y_s / 2, 
-                            //                 tmp_pos.getZ() + scale_z_s / 2);
-                            // cube->scale(scale_x, scale_y, scale_z);
-                            
                             lastMouseX = e.motion.x;
                             lastMouseY = e.motion.y;
+                            std::cout << "MYX: ";
+                            Position3D p4_origin = cube->getTransformedVertexPos(2);
+                            p4_origin.printPos();
+
+                            std::cout << "Vertex Transformed" << std::endl;
+                            for(size_t i = 0; i < 8; i++) {
+                                Position3D p_tmp = cube->getTransformedVertexPos(i);
+                                std::cout << i << ": ";
+                                p_tmp.printPos();
+                            }
+
+                            float p4X = p4_origin.getX();
+                            float p4Y = p4_origin.getY();
+                            float p4Z = p4_origin.getZ();
+                            
+
+                            jopa = true;
+
+                            // cube->rotateX(deltaY * 0.0025f);
+
+                            // cube->rotateZ(cosBetta, sinBetta);
+                            // cube->rotateX(cosAlpha, -sinAlpha);
+
+                            // cube->translate(p1_origin.getX(), p1_origin.getY(), p1_origin.getZ()); 
+                            // cube->translate(-tmp_pos.getX() - xOffset, 
+                            //                 -tmp_pos.getY() + yOffset, 
+                            //                 -tmp_pos.getZ() - zOffset);
+                            // cube->scale(scale_x, scale_y, scale_z);
                         }
                         
                         scene.render(surface);
