@@ -15,3 +15,5 @@ PgUp/PgDown - move the camera by Y
 
 RBM + Mouse - move camera by rotation (Left, Right, Up, Down) \
 LBM + Mouse - move model by rotation 
+
+SHIFT + LBM + Mouse - move model around model edge

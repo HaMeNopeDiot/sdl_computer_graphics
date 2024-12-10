@@ -103,7 +103,7 @@ int main(int argc, char** args) {
                             float yOffset = cube->getModelSizeYs() / 2.0f;
                             float zOffset = cube->getModelSizeZs() / 2.0f;
                             Position3D tmp_pos = cube->getPosition();
-                            std::cout << tmp_pos.getX() << " " << tmp_pos.getY() << " " << tmp_pos.getZ() << "\n";
+                            std::cout << "CENETER: " << tmp_pos.getX() << " " << tmp_pos.getY() << " " << tmp_pos.getZ() << "\n";
 
                             
                             // Переносим в центр координат и масштабируем к единичному размеру
@@ -162,10 +162,10 @@ int main(int argc, char** args) {
                             float p3Y = p3_origin.getY();
                             float p3Z = p3_origin.getZ();
 
-                            float sinBetta = (p3X * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
-                            float cosBetta = (p3Y * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
+                            float cosBetta = (p3X * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
+                            float sinBetta = (p3Y * 1.0f) / (sqrt(pow(p3X, 2) + pow(p3Y, 2)));
                             
-                            cube->rotateZ(-cosBetta, -sinBetta);
+                            cube->rotateZ(cosBetta, -sinBetta);
                             
                             
 
@@ -182,23 +182,42 @@ int main(int argc, char** args) {
                                 p_tmp.printPos();
                             }
 
-                            float p4X = p4_origin.getX();
-                            float p4Y = p4_origin.getY();
-                            float p4Z = p4_origin.getZ();
+                            Position3D p0_origin = cube->getTransformedVertexPos(0);
+                            float p0X = p0_origin.getX();
+                            float p0Y = p0_origin.getY();
+                            float p0Z = p0_origin.getZ();
+                            
+                            float cosGamma = (p0Y * 1.0f) / (sqrt(pow(p0Z, 2) + pow(p0Y, 2)));
+                            float sinGamma = (p0Z * 1.0f) / (sqrt(pow(p0Z, 2) + pow(p0Y, 2)));
+
+                            std::cout<< "COS: " << cosGamma << "SIN: " << sinGamma << '\n';
+
                             
 
-                            jopa = true;
+                            std::cout << "Vertex Transformed" << std::endl;
+                            for(size_t i = 0; i < 8; i++) {
+                                Position3D p_tmp = cube->getTransformedVertexPos(i);
+                                std::cout << i << ": ";
+                                p_tmp.printPos();
+                            }
 
-                            // cube->rotateX(deltaY * 0.0025f);
+                            cube->rotateX(-cosGamma, sinGamma);
+                            jopa = false;
 
-                            // cube->rotateZ(cosBetta, sinBetta);
-                            // cube->rotateX(cosAlpha, -sinAlpha);
+                            cube->rotateX(deltaX * 0.0025f);
 
-                            // cube->translate(p1_origin.getX(), p1_origin.getY(), p1_origin.getZ()); 
-                            // cube->translate(-tmp_pos.getX() - xOffset, 
-                            //                 -tmp_pos.getY() + yOffset, 
-                            //                 -tmp_pos.getZ() - zOffset);
-                            // cube->scale(scale_x, scale_y, scale_z);
+                            cube->rotateX(-cosGamma, -sinGamma);
+                            cube->rotateZ(cosBetta, sinBetta);
+                            cube->rotateX(-cosAlpha, -sinAlpha);
+
+                            cube->translate(p1_origin.getX(), p1_origin.getY(), p1_origin.getZ()); 
+                            cube->translate(tmp_pos.getX() - xOffset, 
+                                            tmp_pos.getY() + yOffset, 
+                                            tmp_pos.getZ() - zOffset);
+                            cube->scale(scale_x, scale_y, scale_z);
+                        }
+                        else {
+                            // cube->rotateX(deltaX * 0.0025f);
                         }
                         
                         scene.render(surface);

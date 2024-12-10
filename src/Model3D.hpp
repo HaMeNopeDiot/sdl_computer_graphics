@@ -64,11 +64,11 @@ public:
         updateTransformedVertices();
     }
 
-    Position3D getVertexPos(int index) {
+    Position3D getVertexPos(int index) const {
         return Position3D(vertices.at(0, index), vertices.at(1, index), vertices.at(2, index));
     }
 
-    Position3D getTransformedVertexPos(int index) {
+    Position3D getTransformedVertexPos(int index) const {
         return Position3D(transformedVertices.at(0, index), transformedVertices.at(1, index), transformedVertices.at(2, index));
     }
 
@@ -102,8 +102,15 @@ public:
                 v2.at(i, 0) = transformedVertices.at(i, edge.second);
             }
             
-            // Отрисовываем ребро
-            camera.drawLine(surface, v1, v2, color);
+            // Отрисовываем ребро с желтым цветом для ребра между вершинами 2 и 3
+            uint32_t edgeColor = color;
+            if ((edge.first == 2 && edge.second == 3) || (edge.first == 3 && edge.second == 2)) {
+                edgeColor = 0xFFFF00;  // Желтый цвет (R=255, G=255, B=0)
+            }
+            if ((edge.first == 3 && edge.second == 0) || (edge.first == 0 && edge.second == 3)) {
+                edgeColor = 0xFF00FF;  // Фиолетовый цвет (R=255, G=0, B=255)
+            }
+            camera.drawLine(surface, v1, v2, edgeColor);
         }
     }
     
@@ -194,7 +201,37 @@ public:
     }
 
     Position3D getPosition() const {
-        return position;
+        Position3D firstModelEdge, secondModelEdge, centerModelEdge;
+        firstModelEdge = getTransformedVertexPos(0);
+        secondModelEdge = getTransformedVertexPos(0);
+
+        for(size_t i = 0; i < vertices.getCols(); i++) {
+            Position3D currentEdge = getTransformedVertexPos(i);
+            if (currentEdge.getX() < firstModelEdge.getX()) {
+                firstModelEdge.setX(currentEdge.getX());
+            }
+            if (currentEdge.getY() < firstModelEdge.getY()) {
+                firstModelEdge.setY(currentEdge.getY());
+            }
+            if (currentEdge.getZ() < firstModelEdge.getZ()) {
+                firstModelEdge.setZ(currentEdge.getZ());
+            }
+            if (currentEdge.getX() > secondModelEdge.getX()) {
+                secondModelEdge.setX(currentEdge.getX());
+            }
+            if (currentEdge.getY() > secondModelEdge.getY()) {
+                secondModelEdge.setY(currentEdge.getY());
+            }
+            if (currentEdge.getZ() > secondModelEdge.getZ()) {
+                secondModelEdge.setZ(currentEdge.getZ());
+            }
+        }
+        centerModelEdge.setX((firstModelEdge.getX() + secondModelEdge.getX()) * 1.0f / 2.0f);
+        centerModelEdge.setY((firstModelEdge.getY() + secondModelEdge.getY()) * 1.0f / 2.0f);
+        centerModelEdge.setZ((firstModelEdge.getZ() + secondModelEdge.getZ()) * 1.0f / 2.0f);
+        // std::cout<< "centerModelEdge = " << centerModelEdge.getX() << " " << centerModelEdge.getY() << " " << centerModelEdge.getZ() << std::endl;
+        return centerModelEdge;
+        //return position;
     }
 
     // Масштабирование

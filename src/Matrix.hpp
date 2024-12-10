@@ -143,7 +143,6 @@ public:
         m.at(2, 2) = -1;
         return m;
     }
-    
 
     size_t getRows() const { return rows; }
     size_t getCols() const { return cols; }
