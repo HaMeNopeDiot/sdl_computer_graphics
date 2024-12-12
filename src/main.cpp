@@ -106,56 +106,14 @@ int main(int argc, char** args) {
                             float zOffset = cube->getModelSizeZs() / 2.0f;
                             Position3D tmp_pos = cube->getPosition();
 
-                            
                             // Переносим в центр координат и масштабируем к единичному размеру
                             cube->scale(1.0f / scale_x, 1.0f / scale_y, 1.0f / scale_z);
                             cube->translate(-tmp_pos.getX() + xOffset, 
                                             -tmp_pos.getY() - yOffset, 
                                             -tmp_pos.getZ() + zOffset);
                             // Положим веришну <3> в начало координат
-                            Position3D p1_origin = cube->getTransformedVertexPos(3);
-                            cube->translate(-p1_origin.getX(), -p1_origin.getY(), -p1_origin.getZ()); 
+                            cube->RotateOverEdge(2, 3, deltaX);
 
-                            // Вычисляем угол поворота по Х
-                            Position3D p2_origin = cube->getTransformedVertexPos(2);
-                            
-                            RotationAngle angleAlpha;
-                            angleAlpha.calculateRotationAngleYZ(p2_origin);
-                            float cosAlpha = angleAlpha.getCos();
-                            float sinAlpha = angleAlpha.getSin();
-                            // Осуществляем поворот по оси ОХ
-                            cube->rotateX(-cosAlpha, sinAlpha);
-
-                            // Вычисляем угол поворота по Z
-                            Position3D p3_origin = cube->getTransformedVertexPos(2);
-                            
-                            RotationAngle angleBetta;
-                            angleBetta.calculateRotationAngleXY(p3_origin);
-                            float cosBetta = angleBetta.getCos();
-                            float sinBetta = angleBetta.getSin();
-                            // Осуществляем поворот по оси ОZ
-                            cube->rotateZ(cosBetta, -sinBetta);
-                            
-                            // Вычисляем угол поворота по X
-                            Position3D p0_origin = cube->getTransformedVertexPos(0);
-                            
-                            RotationAngle angleGamma;
-                            angleGamma.calculateRotationAngleYZ(p0_origin);
-                            float cosGamma = angleGamma.getCos();
-                            float sinGamma = angleGamma.getSin();
-
-                            // Осуществляем поворот по оси ОХ
-                            cube->rotateX(-cosGamma, sinGamma);
-
-                            // Поворачиваем куб вокруг своего ребра
-                            cube->rotateX(deltaX * 0.0025f);
-
-                            // Возвращаем куб в исходное положение по поворотам
-                            cube->rotateX(-cosGamma, -sinGamma);
-                            cube->rotateZ(cosBetta, sinBetta);
-                            cube->rotateX(-cosAlpha, -sinAlpha);
-                            // Возвращаем куб в исходное положение по координатам
-                            cube->translate(p1_origin.getX(), p1_origin.getY(), p1_origin.getZ()); 
                             cube->translate(tmp_pos.getX() - xOffset, 
                                             tmp_pos.getY() + yOffset, 
                                             tmp_pos.getZ() - zOffset);

@@ -4,6 +4,9 @@
 #include <vector>
 #include <cmath>
 
+#include "Position3D.hpp"
+#include "RotationAngle.hpp"
+
 class Matrix {
 private:
     std::vector<std::vector<float>> data;
@@ -52,6 +55,14 @@ public:
         m.at(0, 3) = dx;
         m.at(1, 3) = dy;
         m.at(2, 3) = dz;
+        return m;
+    }
+
+    static Matrix translation(Position3D *point) {
+        Matrix m = identity(4);
+        m.at(0, 3) = point->getX();
+        m.at(1, 3) = point->getY();
+        m.at(2, 3) = point->getZ();
         return m;
     }
 
@@ -143,6 +154,56 @@ public:
     static Matrix reflectZ() {
         Matrix m = identity(4);
         m.at(2, 2) = -1;
+        return m;
+    }
+
+    static Matrix rotationOverEdge(Position3D first, Position3D second, float deltaX)
+    {
+        Matrix m = identity(4);
+
+        // Первая точка ребра будет помещена в начало координато
+        Position3D firstReverse(-first.getX(), -first.getY(), -first.getZ());
+        Matrix toCenter = translation(firstReverse.getX(), firstReverse.getY(), firstReverse.getZ());
+        m = toCenter * m;
+
+        second.setPosition(second.getX() - first.getX(),
+                           second.getY() - first.getY(),
+                           second.getZ() - first.getZ());
+        // Первый поворот
+        RotationAngle angleAlpha;
+        int failure_x = angleAlpha.calculateRotationAngleYZ(second);
+        
+        float cosAlpha = angleAlpha.getCos();
+        float sinAlpha = angleAlpha.getSin();
+
+        if(!failure_x) {
+            // Поворот по ОХ
+            m = rotationX(-cosAlpha, sinAlpha) * m;
+            // Высчитываем новые координаты вершины
+            float newPointY = -sqrt(pow(second.getY(), 2) + pow(second.getZ(), 2));
+            second.setPosition(second.getX(), newPointY, 0.0f);
+        }
+
+        // Второй поворот
+        RotationAngle angleBetta;
+        int failure_z = angleBetta.calculateRotationAngleXY(second);
+        
+        float cosBetta = angleBetta.getCos();
+        float sinBetta = angleBetta.getSin();
+
+        if(!failure_z) {
+            m = rotationZ(cosBetta, -sinBetta) * m;
+        }
+        
+        // Поворот по ребру
+        m = rotationX(deltaX * 0.0025f) * m;
+
+        // Обратный повороты
+        if(!failure_z) { m = rotationZ(cosBetta, sinBetta)   * m; }
+        if(!failure_x) { m = rotationX(-cosAlpha, -sinAlpha) * m; }
+        
+        Matrix toPrev = translation(first.getX(), first.getY(), first.getZ());
+        m = toPrev * m;
         return m;
     }
 

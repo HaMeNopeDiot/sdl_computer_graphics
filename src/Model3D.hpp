@@ -290,6 +290,31 @@ public:
     void reflectZ() {
         applyTransform(Matrix::reflectZ());
     }
+
+    void RotateOverEdge(Position3D first, Position3D second, float deltaX) {
+        applyTransform(Matrix::rotationOverEdge(first, second, deltaX));
+    }
+
+    void RotateOverEdge(size_t first, size_t second, float deltaX) {
+        size_t countOfVertices = vertices.getCols();
+        if(first < countOfVertices && second < countOfVertices && edgeExist(first, second)) {
+            Position3D v1 = getTransformedVertexPos(first);
+            Position3D v2 = getTransformedVertexPos(second);
+            applyTransform(Matrix::rotationOverEdge(v1, v2, deltaX));
+        }
+        
+    }
+
+    bool edgeExist(int ver1, int ver2) {
+        bool exist = false;
+        for(size_t i = 0; i < edges.size(); i++) {
+            std::pair<int, int> tmp  = {ver1, ver2};
+            std::pair<int, int> tmpr = {ver2, ver1};
+            if(tmp == edges[i] || tmpr == edges[i])
+                exist = true;
+        }
+        return exist;
+    }
 };
 
 #endif // _MODEL_3D_HPP_

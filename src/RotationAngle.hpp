@@ -39,20 +39,31 @@ public:
         return std::atan2(sinValue, cosValue);
     }
 
-    void calculateRotationAngleYZ(Position3D coordinates) {
+    int calculateRotationAngleYZ(Position3D coordinates) {
         float pY = coordinates.getY();
         float pZ = coordinates.getZ();
         
-        cosValue = (pY * 1.0f) / (sqrt(pow(pZ, 2) + pow(pY, 2)));
-        sinValue =(pZ * 1.0f) / (sqrt(pow(pZ, 2) + pow(pY, 2)));
+        if(pY != 0 || pZ != 0) {
+            cosValue = (pY * 1.0f) / (sqrt(pow(pZ, 2) + pow(pY, 2)));
+            sinValue =(pZ * 1.0f) / (sqrt(pow(pZ, 2) + pow(pY, 2)));
+            return 0;
+        } else {
+            return 1;
+        }
+        
     }
 
-    void calculateRotationAngleXY(Position3D coordinates) {
+    int calculateRotationAngleXY(Position3D coordinates) {
         float pX = coordinates.getX();
         float pY = coordinates.getY();
         
-        cosValue = (pX * 1.0f) / (sqrt(pow(pX, 2) + pow(pY, 2)));
-        sinValue = (pY * 1.0f) / (sqrt(pow(pX, 2) + pow(pY, 2)));
+        if(pY != 0 || pX != 0) {
+            cosValue = (pX * 1.0f) / (sqrt(pow(pX, 2) + pow(pY, 2)));
+            sinValue = (pY * 1.0f) / (sqrt(pow(pX, 2) + pow(pY, 2)));
+            return 0;
+        } else {
+            return 1;
+        }
     }
 };
 

@@ -30,7 +30,7 @@ public:
 
     // Операторы сравнения
     bool operator==(const Position3D& other) const {
-        return (Position2D::operator==(other)) && z == other.z;
+        return (Position2D::operator==(other)) && getZ() == other.getZ();
     }
 
     bool operator!=(const Position3D& other) const {
@@ -41,17 +41,17 @@ public:
     float distanceTo(const Position3D& other) const {
         float dx = getX() - other.getX();
         float dy = getY() - other.getY();
-        float dz = z - other.z;
+        float dz = getZ() - other.getZ();
         return std::sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     // Нормализация позиции (приведение к единичному вектору)
     void normalize() {
-        float length = std::sqrt(getX() * getX() + getY() * getY() + z * z);
+        float length = std::sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
         if (length != 0) {
             setX(getX() / length);
             setY(getY() / length);
-            z /= length;
+            setZ(getZ() / length);
         }
     }
 
