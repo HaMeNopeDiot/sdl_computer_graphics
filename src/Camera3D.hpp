@@ -210,6 +210,11 @@ public:
         
         updateMatrices();
     }
+
+    // Получение позиции камеры
+    Position3D getPosition() const {
+        return position;
+    }
 };
 
 #endif // _CAMERA_3D_HPP_

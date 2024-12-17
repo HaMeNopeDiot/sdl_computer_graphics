@@ -58,6 +58,29 @@ public:
     void printPos(float xOffset = 0.0f, float yOffset = 0.0f, float zOffset = 0.0f) {
         std::cout << "POS = X: " << getX() + xOffset << " Y: " << getY() + yOffset << " Z: " << getZ() + zOffset << std::endl;
     }
+    
+    // Операторы сложения и вычитания
+    Position3D operator+(const Position3D& other) const {
+        return Position3D(getX() + other.getX(), getY() + other.getY(), z + other.z);
+    }
+
+    Position3D operator-(const Position3D& other) const {
+        return Position3D(getX() - other.getX(), getY() - other.getY(), z - other.z);
+    }
+
+    // Векторное произведение
+    Position3D cross(const Position3D& other) const {
+        return Position3D(
+            getY() * other.z - z * other.getY(),
+            z * other.getX() - getX() * other.z,
+            getX() * other.getY() - getY() * other.getX()
+        );
+    }
+
+    // Скалярное произведение
+    float dot(const Position3D& other) const {
+        return getX() * other.getX() + getY() * other.getY() + z * other.z;
+    }
 };
 
 #endif // _POSITION3D_HPP_

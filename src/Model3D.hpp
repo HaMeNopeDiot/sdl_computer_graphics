@@ -4,9 +4,12 @@
 #include "Matrix.hpp"
 #include "Position3D.hpp"
 #include "Camera3D.hpp"
+#include "HiddenSurfaceRemoval.hpp"
+
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <set>
 
 class Model3D {
 private:
@@ -14,6 +17,9 @@ private:
     Matrix transformedVertices;   // Текущие вершины после преобразований
     Matrix transformMatrix;       // Матрица накопленных преобразований
     std::vector<std::pair<int, int>> edges;  // Рёбра модели
+
+    std::vector<std::vector<int>> polygons;  // Полигоны модели
+    HiddenSurfaceRemoval hsr;    // Обработчик удаления невидимых поверхностей
     Position3D position;         // Позиция модели в 3D пространстве
 
     float modelSizeXs;
@@ -74,43 +80,72 @@ public:
 
     // Обновление преобразованных вершин
     void updateTransformedVertices() {
-        for (size_t i = 0; i < vertices.getCols(); ++i) {
-            Matrix vertex(4, 1);
-            for (size_t j = 0; j < 4; ++j) {
-                vertex.at(j, 0) = vertices.at(j, i);
-            }
-            
-            Matrix transformed = transformMatrix * vertex;
-            for (size_t j = 0; j < 4; ++j) {
-                transformedVertices.at(j, i) = transformed.at(j, 0);
-            }
+        transformedVertices = transformMatrix * vertices;
+        
+        // Обновляем данные для удаления невидимых поверхностей
+        std::vector<Position3D> transformedPositions;
+        for (size_t i = 0; i < transformedVertices.getCols(); ++i) {
+            transformedPositions.emplace_back(
+                transformedVertices.at(0, i),
+                transformedVertices.at(1, i),
+                transformedVertices.at(2, i)
+            );
         }
+        hsr.setVertices(transformedPositions);
+        hsr.updatePolygons();
     }
 
     // Отрисовка модели
     void draw(Camera3D& camera, SDL_Surface* surface, uint32_t color) {
+        // Получаем видимые полигоны
+        auto visiblePolygons = getVisiblePolygons(camera);
+        
+        // Создаем множество видимых ребер
+        std::set<std::pair<int, int>> visibleEdges;
+        
+        // Для каждого видимого полигона добавляем его ребра в множество видимых ребер
+        for (const auto& polygon : visiblePolygons) {
+            for (size_t i = 0; i < polygon.vertexIndices.size(); ++i) {
+                int v1 = polygon.vertexIndices[i];
+                int v2 = polygon.vertexIndices[(i + 1) % polygon.vertexIndices.size()];
+                
+                // Нормализуем ребро (меньший индекс всегда первый)
+                if (v1 > v2) std::swap(v1, v2);
+                visibleEdges.insert({v1, v2});
+            }
+        }
+        
+        // Отрисовываем только видимые ребра
         for (const auto& edge : edges) {
-            Matrix v1(4, 1), v2(4, 1);
+            // Нормализуем ребро для сравнения
+            int v1 = edge.first;
+            int v2 = edge.second;
+            if (v1 > v2) std::swap(v1, v2);
             
-            // Получаем координаты первой вершины
-            for (size_t i = 0; i < 4; ++i) {
-                v1.at(i, 0) = transformedVertices.at(i, edge.first);
+            // Проверяем, является ли ребро частью видимого полигона
+            if (visibleEdges.find({v1, v2}) != visibleEdges.end()) {
+                Matrix vert1(4, 1), vert2(4, 1);
+                
+                // Получаем координаты первой вершины
+                for (size_t i = 0; i < 4; ++i) {
+                    vert1.at(i, 0) = transformedVertices.at(i, edge.first);
+                }
+                
+                // Получаем координаты второй вершины
+                for (size_t i = 0; i < 4; ++i) {
+                    vert2.at(i, 0) = transformedVertices.at(i, edge.second);
+                }
+                
+                // Отрисовываем ребро с соответствующим цветом
+                uint32_t edgeColor = color;
+                if ((edge.first == 2 && edge.second == 3) || (edge.first == 3 && edge.second == 2)) {
+                    edgeColor = 0xFFFF00;  // Желтый цвет
+                }
+                if ((edge.first == 3 && edge.second == 0) || (edge.first == 0 && edge.second == 3)) {
+                    edgeColor = 0xFF00FF;  // Фиолетовый цвет
+                }
+                camera.drawLine(surface, vert1, vert2, edgeColor);
             }
-            
-            // Получаем координаты второй вершины
-            for (size_t i = 0; i < 4; ++i) {
-                v2.at(i, 0) = transformedVertices.at(i, edge.second);
-            }
-            
-            // Отрисовываем ребро с желтым цветом для ребра между вершинами 2 и 3
-            uint32_t edgeColor = color;
-            if ((edge.first == 2 && edge.second == 3) || (edge.first == 3 && edge.second == 2)) {
-                edgeColor = 0xFFFF00;  // Желтый цвет (R=255, G=255, B=0)
-            }
-            if ((edge.first == 3 && edge.second == 0) || (edge.first == 0 && edge.second == 3)) {
-                edgeColor = 0xFF00FF;  // Фиолетовый цвет (R=255, G=0, B=255)
-            }
-            camera.drawLine(surface, v1, v2, edgeColor);
         }
     }
     
@@ -135,6 +170,12 @@ public:
     void setTransformMatrix(const Matrix& matrix) {
         transformMatrix = matrix;
         updateTransformedVertices();
+    }
+
+    // Добавление полигона
+    void addPolygon(const std::vector<int>& vertexIndices) {
+        polygons.push_back(vertexIndices);
+        hsr.addPolygon(vertexIndices);
     }
 
     // Создание куба
@@ -179,6 +220,20 @@ public:
         cube->addEdge(1, 5);
         cube->addEdge(2, 6);
         cube->addEdge(3, 7);
+
+        // Добавляем полигоны (грани) куба
+        // Передняя грань
+        cube->addPolygon({4, 5, 6, 7});
+        // Задняя грань
+        cube->addPolygon({0, 3, 2, 1});
+        // Верхняя грань
+        cube->addPolygon({3, 7, 6, 2});
+        // Нижняя грань
+        cube->addPolygon({0, 1, 5, 4});
+        // Левая грань
+        cube->addPolygon({0, 4, 7, 3});
+        // Правая грань
+        cube->addPolygon({1, 2, 6, 5});
 
         return cube;
     }
@@ -314,6 +369,20 @@ public:
                 exist = true;
         }
         return exist;
+    }
+
+    // Получение отсортированных видимых полигонов
+    std::vector<Polygon3D> getVisiblePolygons(const Camera3D& camera) {
+        auto sortedPolygons = hsr.sortPolygons();
+        std::vector<Polygon3D> visiblePolygons;
+        
+        for (const auto& polygon : sortedPolygons) {
+            if (hsr.isPolygonVisible(polygon, camera.getPosition())) {
+                visiblePolygons.push_back(polygon);
+            }
+        }
+        
+        return visiblePolygons;
     }
 };
 
