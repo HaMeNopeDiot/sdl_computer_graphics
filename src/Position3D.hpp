@@ -65,7 +65,7 @@ public:
     }
 
     Position3D operator-(const Position3D& other) const {
-        return Position3D(getX() - other.getX(), getY() - other.getY(), z - other.z);
+        return Position3D(getX() - other.getX(), getY() - other.getY(), getZ() - other.getZ());
     }
 
     // Векторное произведение
@@ -79,7 +79,7 @@ public:
 
     // Скалярное произведение
     float dot(const Position3D& other) const {
-        return getX() * other.getX() + getY() * other.getY() + z * other.z;
+        return getX() * other.getX() + getY() * other.getY() + getZ() * other.getZ();
     }
 };
 

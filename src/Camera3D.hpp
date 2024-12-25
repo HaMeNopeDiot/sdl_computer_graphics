@@ -4,6 +4,7 @@
 #include "Matrix.hpp"
 #include "Position3D.hpp"
 #include <SDL2/SDL.h>
+#include <limits>
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -25,6 +26,12 @@ private:
     Position3D position;  // Позиция камеры
     float yaw = 0.0f;    // Поворот вокруг оси Y
     float pitch = 0.0f;  // Поворот вокруг оси X
+
+    std::vector<std::vector<int>> zBuffer;
+
+    void initZBuffer() {
+        std::vector<int> zBufferRow (W, std::numeric_limits<int>::max());
+    }
 
     void updateMatrices() {
         // Матрица вида (View Matrix)
@@ -134,6 +141,66 @@ public:
                 currentY += sy;
             }
         }
+    }
+
+    void fillTriangle(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, uint32_t color) {
+        float x1, y1, x2, y2, x3, y3;
+        worldToScreen(v1, x1, y1);
+        worldToScreen(v2, x2, y2);
+        worldToScreen(v3, x3, y3);
+        
+        std::cout << "START" << std::endl;
+        std::cout << "xy1:" << x1 << " " << y1 << std::endl;
+        std::cout << "xy2:" << x2 << " " << y2 << std::endl;
+        std::cout << "xy3:" << x3 << " " << y3 << std::endl;
+
+        // Сортировка вершин по y
+        if (y1 > y2) std::swap(x1, x2), std::swap(y1, y2);
+        if (y1 > y3) std::swap(x1, x3), std::swap(y1, y3);
+        if (y2 > y3) std::swap(x2, x3), std::swap(y2, y3);
+
+        std::cout << "SORT" << std::endl;
+        std::cout << "xy1:" << x1 << " " << y1 << std::endl;
+        std::cout << "xy2:" << x2 << " " << y2 << std::endl;
+        std::cout << "xy3:" << x3 << " " << y3 << std::endl;
+        
+        // Заполнение между двумя линиями
+        for (int y = (int)y1; y <= (int)y3; ++y) {
+            int x_start, x_end;
+
+            // Вычисляем x_start и x_end для первой половины треугольника
+            if (y < y2) {
+                std::cout << "N";
+                if(y1 != y2) {
+                    x_start = (int)(x1 + (((x2 - x1) * (y - y1)) * 1.0f / (y2 - y1)));
+                } else {
+                    x_start = (int)x1;
+                }
+                if(y1 != y3) {
+                    x_end = (int)(x1 + (((x3 - x1) * (y - y1)) * 1.0f / (y3 - y1)));
+                } else {
+                    x_end = (int)x1;
+                }
+            } else {
+                x_start = (int)(x2 + (x3 - x2) * (y - y2) / (y3 - y2));
+                x_end = (int)(x1 + (x3 - x1) * (y - y1) / (y3 - y1));
+            }
+
+            if(x_start > x_end) { std::swap(x_start, x_end); std::cout << "S"; }
+
+            std::cout << x_start << " ::: " << x_end << std::endl;
+
+            // Рисуем линию от x_start до x_end
+            for (int x = x_start; x <= x_end; ++x) {
+                if (x >= 0 && x < W && y >= 0 && y < H) {
+                    ((uint32_t*)surface->pixels)[y * surface->pitch / 4 + x] = color;
+                }
+            }
+        }
+    }
+
+    void fillQuad(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, const Matrix& v4, uint32_t color) {
+        
     }
 
     // Отрисовка координатных осей

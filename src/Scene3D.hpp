@@ -1,6 +1,9 @@
-#pragma once
+#ifndef _SCENE_3D_HPP_
+#define _SCENE_3D_HPP_
+
 #include "Camera3D.hpp"
 #include "Model3D.hpp"
+#include "HiddenSurfaceRemoval.hpp"
 #include <vector>
 #include <memory>
 
@@ -9,6 +12,8 @@ private:
     std::vector<std::shared_ptr<Model3D>> models;
     Camera3D camera;
     SDL_Surface* surface;
+
+    HiddenSurfaceRemoval hsr;    // Обработчик удаления невидимых поверхностей
 
 public:
     Scene3D(int width, int height) 
@@ -43,8 +48,10 @@ public:
         // Отрисовка осей координат
         camera.drawAxes(surface);
         
+        size_t indexModel = 0;
         // Отрисовка всех моделей
         for (auto& model : models) {
+            std::cout << "Model : " << indexModel++ << std::endl;
             model->draw(camera, surface, 0xFFFFFF);  // Белый цвет для моделей
         }
         
@@ -64,4 +71,7 @@ public:
     Camera3D& getCamera() {
         return camera;
     }
+
 };
+
+#endif /* _SCENE_3D_HPP_ */

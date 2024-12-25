@@ -112,9 +112,45 @@ public:
                 // Нормализуем ребро (меньший индекс всегда первый)
                 if (v1 > v2) std::swap(v1, v2);
                 visibleEdges.insert({v1, v2});
+                // Matrix vert1(4, 1), vert2(4, 1);
+                
+                // // Получаем координаты первой вершины
+                // for (size_t i = 0; i < 4; ++i) {
+                //     vert1.at(i, 0) = transformedVertices.at(i, v1);
+                // }
+                
+                // // Получаем координаты второй вершины
+                // for (size_t i = 0; i < 4; ++i) {
+                //     vert2.at(i, 0) = transformedVertices.at(i, v2);
+                // }
+                
+                // // Отрисовываем ребро с соответствующим цветом
+                // uint32_t edgeColor = color;
+                // if ((v1 == 2 && v2 == 3) || (v1 == 3 && v2 == 2)) {
+                //     edgeColor = 0xFFFF00;  // Желтый цвет
+                // }
+                // if ((v1 == 3 && v2 == 0) || (v1 == 0 && v2 == 3)) {
+                //     edgeColor = 0xFF00FF;  // Фиолетовый цвет
+                // }
+                // camera.drawLine(surface, vert1, vert2, edgeColor);
             }
         }
         
+        size_t index = 0;
+        for (const auto& polygon : visiblePolygons) {
+            // Получаем координаты вершин полигона
+            std::vector<Matrix> verticesQQQ;
+            for (int index : polygon.vertexIndices) {
+                Matrix vertex(4, 1);
+                for (size_t i = 0; i < 4; ++i) {
+                    vertex.at(i, 0) = transformedVertices.at(i, index);
+                }
+                verticesQQQ.push_back(vertex);
+            }
+            std::cout << "=== VI: "  << index++ << " : " << polygon.vertexIndices[0] << " " << polygon.vertexIndices[1] << " " << polygon.vertexIndices[2] << std::endl;
+            // camera.fillTriangle(surface, verticesQQQ[0], verticesQQQ[1], verticesQQQ[2], 0x333333);
+        }
+
         // Отрисовываем только видимые ребра
         for (const auto& edge : edges) {
             // Нормализуем ребро для сравнения
@@ -174,8 +210,72 @@ public:
 
     // Добавление полигона
     void addPolygon(const std::vector<int>& vertexIndices) {
-        polygons.push_back(vertexIndices);
-        hsr.addPolygon(vertexIndices);
+        switch(vertexIndices.size()) {
+            case 3: {
+                polygons.push_back(vertexIndices);
+                hsr.addPolygon(vertexIndices);
+                }
+                break;
+            case 4: {
+                polygons.push_back(vertexIndices);
+                hsr.addPolygon(vertexIndices);
+                }
+                break; 
+            default: {
+                std::cout << "not supported!" << std::endl;
+                polygons.push_back(vertexIndices);
+                hsr.addPolygon(vertexIndices);
+                }
+                break;
+        }    
+    }
+
+    static std::shared_ptr<Model3D> createTriangle(float size = 1.0f)
+    {
+        auto triangle = std::make_shared<Model3D>(5);
+
+        float halfSize = size / 2.0f;
+        triangle->model_size_X = 1.0f;
+        triangle->model_size_Y = 1.0f;
+        triangle->model_size_Z = 1.0f;
+
+        triangle->modelSizeXs = size;
+        triangle->modelSizeYs = size;
+        triangle->modelSizeZs = size;
+
+        triangle->rotationX = 0.0f;
+        triangle->rotationY = 0.0f;
+        triangle->rotationZ = 0.0f;
+
+        triangle->setVertex(0, -halfSize, -halfSize, -halfSize);  
+        triangle->setVertex(1,  halfSize, -halfSize, -halfSize);  
+        triangle->setVertex(2,  halfSize, -halfSize,  halfSize);
+        triangle->setVertex(3, -halfSize, -halfSize,  halfSize);
+        triangle->setVertex(4,  0,         halfSize,  0);
+
+        triangle->addEdge(0, 1);
+        triangle->addEdge(1, 2);
+        triangle->addEdge(2, 3);
+        triangle->addEdge(3, 0); 
+
+        triangle->addEdge(0, 4);
+        triangle->addEdge(1, 4);
+        triangle->addEdge(2, 4);
+        triangle->addEdge(3, 4); 
+
+
+        
+        // triangle->addPolygon({0, 1, 2, 3});
+        triangle->addEdge(0, 2);
+        triangle->addPolygon({0, 2, 3});
+        triangle->addPolygon({2, 0, 1});
+        
+        triangle->addPolygon({1, 0, 4});
+        triangle->addPolygon({2, 1, 4});
+        triangle->addPolygon({3, 2, 4});
+        triangle->addPolygon({0, 3, 4});
+
+        return triangle;
     }
 
     // Создание куба
@@ -223,18 +323,47 @@ public:
 
         // Добавляем полигоны (грани) куба
         // Передняя грань
-        cube->addPolygon({4, 5, 6, 7});
-        // Задняя грань
-        cube->addPolygon({0, 3, 2, 1});
-        // Верхняя грань
-        cube->addPolygon({3, 7, 6, 2});
-        // Нижняя грань
-        cube->addPolygon({0, 1, 5, 4});
-        // Левая грань
-        cube->addPolygon({0, 4, 7, 3});
-        // Правая грань
-        cube->addPolygon({1, 2, 6, 5});
+        // cube->addPolygon({4, 5, 6, 7});
+        // // Задняя грань
+        // cube->addPolygon({0, 3, 2, 1});
+        // // Верхняя грань
+        // cube->addPolygon({3, 7, 6, 2});
+        // // Нижняя грань
+        // cube->addPolygon({0, 1, 5, 4});
+        // // Левая грань
+        // cube->addPolygon({0, 4, 7, 3});
+        // // Правая грань
+        // cube->addPolygon({1, 2, 6, 5});
+        cube->addEdge(5, 7);
+        cube->addEdge(0, 2);
+        cube->addEdge(5, 2);
+        cube->addEdge(1, 4);
+        cube->addEdge(3, 4);
+        cube->addEdge(7, 2);
 
+        // Передняя грань
+        cube->addPolygon({4, 5, 7});
+        cube->addPolygon({5, 6, 7});
+
+        // Задняя грань
+        cube->addPolygon({0, 3, 2});
+        cube->addPolygon({0, 2, 1});
+
+        // Грань правая
+        cube->addPolygon({5, 1, 2});
+        cube->addPolygon({6, 5, 2});
+        
+        // Грань вверхняя
+        cube->addPolygon({3, 7, 2});
+        cube->addPolygon({7, 6, 2});
+
+        // Грань левая
+        cube->addPolygon({0, 4, 3});
+        cube->addPolygon({4, 7, 3});
+
+        // Грань нижняя
+        cube->addPolygon({4, 0, 1});
+        cube->addPolygon({4, 1, 5});
         return cube;
     }
 
@@ -376,13 +505,22 @@ public:
         auto sortedPolygons = hsr.sortPolygons();
         std::vector<Polygon3D> visiblePolygons;
         
+        // size_t index = 0;
+        // std::cout<< "List" << std::endl;
         for (const auto& polygon : sortedPolygons) {
             if (hsr.isPolygonVisible(polygon, camera.getPosition())) {
                 visiblePolygons.push_back(polygon);
+                // std::cout << index << " of " << polygons.size() << " visible." << std::endl;
             }
+            // index++;
         }
         
         return visiblePolygons;
+    }
+
+    std::vector<std::vector<int>> getPolygons()
+    {
+        return polygons;  // Полигоны модели
     }
 };
 

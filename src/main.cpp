@@ -40,8 +40,12 @@ int main(int argc, char** args) {
 
     // Создаем куб
     auto cube = Model3D::createCube(0.5f);
+    auto triangle = Model3D::createTriangle(0.5f);
+    
+    triangle->translate(1.0f, 0.0f, 0.0f);
     cube->translate(0.0f, 0.0f, 0.0f);  // Отодвигаем куб от камеры
     scene.addModel(cube);
+    scene.addModel(triangle);
 
     // Initial draw
     scene.render(surface);
@@ -96,31 +100,8 @@ int main(int argc, char** args) {
                 if (isLeftDragging) {
                     if(isShiftPressed) {
                         if(!debug) { 
-                            // Получаем текущие параметры куба
-                            float scale_x = cube->get_model_size_X();
-                            float scale_y = cube->get_model_size_Y();
-                            float scale_z = cube->get_model_size_Z();
-
-                            float xOffset = cube->getModelSizeXs() / 2.0f;
-                            float yOffset = cube->getModelSizeYs() / 2.0f;
-                            float zOffset = cube->getModelSizeZs() / 2.0f;
-                            Position3D tmp_pos = cube->getPosition();
-
-                            // Переносим в центр координат и масштабируем к единичному размеру
-                            cube->scale(1.0f / scale_x, 1.0f / scale_y, 1.0f / scale_z);
-                            cube->translate(-tmp_pos.getX() + xOffset, 
-                                            -tmp_pos.getY() - yOffset, 
-                                            -tmp_pos.getZ() + zOffset);
-                            // Положим веришну <3> в начало координат
                             cube->RotateOverEdge(2, 3, deltaX);
 
-                            cube->translate(tmp_pos.getX() - xOffset, 
-                                            tmp_pos.getY() + yOffset, 
-                                            tmp_pos.getZ() - zOffset);
-                            // Вовзращаем кубу исходный размер
-                            cube->scale(scale_x, scale_y, scale_z);
-
-                            
                             debug = false;
                         }
                         

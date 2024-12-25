@@ -163,6 +163,7 @@ public:
 
         // Первая точка ребра будет помещена в начало координато
         Position3D firstReverse(-first.getX(), -first.getY(), -first.getZ());
+
         Matrix toCenter = translation(firstReverse.getX(), firstReverse.getY(), firstReverse.getZ());
         m = toCenter * m;
 
@@ -178,9 +179,9 @@ public:
 
         if(!failure_x) {
             // Поворот по ОХ
-            m = rotationX(-cosAlpha, sinAlpha) * m;
+            m = rotationX(cosAlpha, -sinAlpha) * m;
             // Высчитываем новые координаты вершины
-            float newPointY = -sqrt(pow(second.getY(), 2) + pow(second.getZ(), 2));
+            float newPointY = sqrt(pow(second.getY(), 2) + pow(second.getZ(), 2));
             second.setPosition(second.getX(), newPointY, 0.0f);
         }
 
@@ -200,7 +201,7 @@ public:
 
         // Обратный повороты
         if(!failure_z) { m = rotationZ(cosBetta, sinBetta)   * m; }
-        if(!failure_x) { m = rotationX(-cosAlpha, -sinAlpha) * m; }
+        if(!failure_x) { m = rotationX(cosAlpha, sinAlpha) * m; }
         
         Matrix toPrev = translation(first.getX(), first.getY(), first.getZ());
         m = toPrev * m;

@@ -11,6 +11,10 @@ struct Polygon3D {
 
     Polygon3D(const std::vector<int>& indices) : vertexIndices(indices), normal(), avgZ(0.0f) {}
 
+    std::vector<int> getVertexIndices() {
+        return vertexIndices;
+    }
+
     // Вычисление нормали полигона
     void calculateNormal(const std::vector<Position3D>& vertices) {
         if (vertexIndices.size() < 3) return;
@@ -30,6 +34,16 @@ struct Polygon3D {
             sumZ += vertices[index].getZ();
         }
         avgZ = sumZ / vertexIndices.size();
+    }
+
+    float getAvgZ()
+    {
+        return avgZ;
+    }  
+
+    size_t size()
+    {
+        return vertexIndices.size();
     }
 };
 

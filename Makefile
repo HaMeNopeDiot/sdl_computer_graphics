@@ -16,7 +16,7 @@ LDFLAGS = -lSDL2main -lSDL2  # Добавляем флаги для линков
 
 OBJ_DIR_EX := $(shell mkdir -p $(OBJ_DIR) && echo $(OBJ_DIR))
 
-all: $(BASE)
+all: clean $(BASE)
 
 $(BASE): .depend $(OBJECTS)
 	$(CC) $(filter-out .depend,$^) -Og -g -o "$@" $(LDFLAGS)  # Добавляем линковочные флаги
