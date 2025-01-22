@@ -3,6 +3,9 @@
 
 #include "Matrix.hpp"
 #include "Position3D.hpp"
+#include "Position2D.hpp"
+#include "Zbuffer.hpp"
+
 #include <SDL2/SDL.h>
 #include <limits>
 
@@ -26,6 +29,7 @@ private:
     Position3D position;  // Позиция камеры
     float yaw = 0.0f;    // Поворот вокруг оси Y
     float pitch = 0.0f;  // Поворот вокруг оси X
+
 
     std::vector<std::vector<int>> zBuffer;
 
@@ -89,7 +93,7 @@ public:
     }
 
     // Преобразование из мировых координат в экранные
-    void worldToScreen(const Matrix& worldPoint, float& screenX, float& screenY) {
+    void worldToScreen(const Matrix& worldPoint, float& screenX, float& screenY, float& screenW) {
         // Применяем последовательно все преобразования
         Matrix viewPoint = viewMatrix * worldPoint;
         Matrix projPoint = projectionMatrix * viewPoint;
@@ -106,13 +110,16 @@ public:
         
         screenX = screenPoint.at(0, 0);
         screenY = screenPoint.at(1, 0);
+        screenW = w;
+        
+        // screenPoint.printMatrix();
     }
 
     // Отрисовка линии в мировых координатах
     void drawLine(SDL_Surface* surface, const Matrix& start, const Matrix& end, uint32_t color) {
-        float x1, y1, x2, y2;
-        worldToScreen(start, x1, y1);
-        worldToScreen(end, x2, y2);
+        float x1, y1, x2, y2, w1, w2;
+        worldToScreen(start, x1, y1, w1);
+        worldToScreen(end, x2, y2, w2);
         
         // Используем алгоритм Брезенхэма для отрисовки линии
         int dx = abs((int)x2 - (int)x1);
@@ -144,28 +151,28 @@ public:
     }
 
     void fillTriangle(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, uint32_t color) {
-        float x1, y1, x2, y2, x3, y3;
-        worldToScreen(v1, x1, y1);
-        worldToScreen(v2, x2, y2);
-        worldToScreen(v3, x3, y3);
+        float x1, y1, x2, y2, x3, y3, w1, w2, w3;
+        worldToScreen(v1, x1, y1, w1);
+        worldToScreen(v2, x2, y2, w2);
+        worldToScreen(v3, x3, y3, w3);
         
-        std::cout << "START" << std::endl;
-        std::cout << "xy1:" << x1 << " " << y1 << std::endl;
-        std::cout << "xy2:" << x2 << " " << y2 << std::endl;
-        std::cout << "xy3:" << x3 << " " << y3 << std::endl;
+        // std::cout << "START" << std::endl;
+        // std::cout << "xy1:" << x1 << " " << y1 << std::endl;
+        // std::cout << "xy2:" << x2 << " " << y2 << std::endl;
+        // std::cout << "xy3:" << x3 << " " << y3 << std::endl;
 
         // Сортировка вершин по y
         if (y1 > y2) std::swap(x1, x2), std::swap(y1, y2);
         if (y1 > y3) std::swap(x1, x3), std::swap(y1, y3);
         if (y2 > y3) std::swap(x2, x3), std::swap(y2, y3);
 
-        std::cout << "SORT" << std::endl;
-        std::cout << "xy1:" << x1 << " " << y1 << std::endl;
-        std::cout << "xy2:" << x2 << " " << y2 << std::endl;
-        std::cout << "xy3:" << x3 << " " << y3 << std::endl;
+        // std::cout << "SORT" << std::endl;
+        // std::cout << "xy1:" << x1 << " " << y1 << std::endl;
+        // std::cout << "xy2:" << x2 << " " << y2 << std::endl;
+        // std::cout << "xy3:" << x3 << " " << y3 << std::endl;
         
         // Заполнение между двумя линиями
-        for (int y = (int)y1; y <= (int)y3; ++y) {
+        for (int y = (int)y1 + 1; y <= (int)y3; ++y) {
             int x_start, x_end;
 
             // Вычисляем x_start и x_end для первой половины треугольника
@@ -199,9 +206,170 @@ public:
         }
     }
 
-    void fillQuad(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, const Matrix& v4, uint32_t color) {
+    typedef struct {
+        float x;
+        float y;
+        float w;
+    } Point2D;
+
+    void fillTriangleAlt(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, uint32_t color, Zbuffer zbuffer) {
+        float x1, y1, x2, y2, x3, y3, w1, w2, w3;
+        worldToScreen(v1, x1, y1, w1);
+        worldToScreen(v2, x2, y2, w2);
+        worldToScreen(v3, x3, y3, w3);
+        // Переведу все по удобству в объекты
+        Point2D top, mid, bot;
+        // std::cout<< "Yo mama: " << w1 << " " << w2 << " " << w3 << std::endl;
+        w1 = 1.0f / w1;
+        w2 = 1.0f / w2;
+        w3 = 1.0f / w3;
+
+        // x1 = std::trunc(x1);
+        // x2 = std::trunc(x2);
+        // x3 = std::trunc(x3);
+        // y1 = std::trunc(y1);
+        // y2 = std::trunc(y2);
+        // y3 = std::trunc(y3);
+
+        top.x = x1;
+        top.y = y1;
+        top.w = w1;
+
+        mid.x = x2;
+        mid.y = y2;
+        mid.w = w2;
+
+        bot.x = x3;
+        bot.y = y3;
+        bot.w = w3;
+
+        if(mid.y < top.y) {
+            std::swap(mid, top);
+        }
+
+        if(bot.y < top.y) {
+            std::swap(bot, top);
+        }
+
+        if(bot.y < mid.y) {
+            std::swap(bot, mid);
+        }
+
+        float dyTopMid = mid.y - top.y;
+        float dyTopBot = bot.y - top.y;
+        float dyMidBot = bot.y - mid.y;
         
+        if(dyTopBot == 0) {
+            return;
+        }
+
+        Point2D topBotsStep;
+        topBotsStep.x = ((bot.x - top.x) * 1.0f / dyTopBot);
+        topBotsStep.w = ((bot.w - top.w) * 1.0f / dyTopBot);
+
+        Point2D mid2;
+        mid2.x = top.x + dyTopMid * topBotsStep.x;
+        mid2.y = top.y + dyTopMid;
+        mid2.w = top.w + dyTopMid * topBotsStep.w;
+
+        if(mid.x > mid2.x) {
+            std::swap(mid, mid2);
+        }
+
+        if(dyTopMid) {
+            Point2D leftStep;
+            leftStep.x = ((mid.x - top.x) * 1.0f / dyTopMid);
+            leftStep.w = ((mid.w - top.w) * 1.0f / dyTopMid);
+
+            Point2D rightStep;
+            rightStep.x = ((mid2.x - top.x) * 1.0f / dyTopMid);
+            rightStep.w = ((mid2.w - top.w) * 1.0f / dyTopMid);
+
+            float yStart = std::max(0.0f, top.y);
+            float yEnd   = std::min(float(surface->h - 1.0f), mid.y);
+            
+            for(int y = yStart + 1; y < yEnd; y++) {
+                float ySteps = y - top.y;
+
+                Point2D left;
+                left.x = std::trunc(top.x + ySteps * leftStep.x);
+                left.w = top.w + ySteps * leftStep.w;
+
+                Point2D right;
+                right.x = std::trunc(top.x + ySteps * rightStep.x);
+                right.w = top.w + ySteps * rightStep.w;
+
+                float dx = right.x - left.x;
+                if(dx != 0) {
+                    float wStep = (right.w - left.w) * 1.0f / dx;
+                    float xStart = std::max(0.0f, left.x);
+                    float xEnd   = std::min(right.x, float(surface->w));
+
+                    for(int x = xStart + 1; x < xEnd; x++) { 
+                        float xSteps = x - left.x;
+                        float w = left.w + xSteps * wStep;
+                        float z = 1.0f / w;
+                        
+                        
+                        if(z < zbuffer.getValue(x, y)) {
+                            // std::cout << "(x, y): " << x << " " << y << " -- " << z << " vs " << zbuffer.getValue(x, y) << std::endl;
+                            zbuffer.setValue(x, y, z);
+                            // std::cout << " after " << zbuffer.getValue(x, y) << std::endl;
+                        } else {
+                            continue;
+                        }
+                        ((uint32_t*)surface->pixels)[y * surface->pitch / 4 + x] = color;
+                    }
+                }
+            }
+        }
+
+        if(dyMidBot) {
+            Point2D leftStep;
+            leftStep.x = ((bot.x - mid.x) * 1.0f / dyMidBot);
+            leftStep.w = ((bot.w - mid.w) * 1.0f / dyMidBot);
+
+            Point2D rightStep;
+            rightStep.x = ((bot.x - mid2.x) * 1.0f / dyMidBot);
+            rightStep.w = ((bot.w - mid2.w) * 1.0f / dyMidBot);
+
+            float yStart = std::max(0.0f, mid.y);
+            float yEnd   = std::min(surface->h - 1.0f, bot.y);
+            
+            for(int y = yStart + 1; y < yEnd; y++) {
+                float ySteps = y - mid.y;
+
+                Point2D left;
+                left.x = std::trunc(mid.x + ySteps * leftStep.x);
+                left.w = mid.w + ySteps * leftStep.w;
+
+                Point2D right;
+                right.x = std::trunc(mid2.x + ySteps * rightStep.x);
+                right.w = mid2.w + ySteps * rightStep.w;
+
+                float dx = right.x - left.x;
+                if(dx != 0) {
+                    float wStep = (right.w - left.w) * 1.0f / dx;
+                    float xStart = std::max(0.0f, left.x);
+                    float xEnd   = std::min(right.x, float(surface->w));
+
+                    for(int x = xStart + 1; x < xEnd; x++) { 
+                        float xSteps = x - left.x;
+                        float w = left.w + xSteps * wStep;
+                        float z = 1.0f / w;
+
+                        if(z < zbuffer.getValue(x, y)) {
+                            zbuffer.setValue(x, y, z);
+                        } else {
+                            continue;
+                        }
+                        ((uint32_t*)surface->pixels)[y * surface->pitch / 4 + x] = color;
+                    }
+                }
+            }
+        }
     }
+
 
     // Отрисовка координатных осей
     void drawAxes(SDL_Surface* surface) {
@@ -282,6 +450,7 @@ public:
     Position3D getPosition() const {
         return position;
     }
+
 };
 
 #endif // _CAMERA_3D_HPP_

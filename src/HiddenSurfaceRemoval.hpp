@@ -52,7 +52,7 @@ public:
         //     Polygon3D tmp = sortedPolygons[i];
         //     std::cout << " " << tmp.getAvgZ();
         // }
-        std::cout << std::endl;
+        // std::cout << std::endl;
         
         return sortedPolygons;
     }

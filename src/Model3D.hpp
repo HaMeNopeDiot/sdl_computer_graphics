@@ -11,6 +11,7 @@
 #include <iostream>
 #include <set>
 
+
 class Model3D {
 private:
     Matrix vertices;              // Исходные вершины модели
@@ -96,7 +97,7 @@ public:
     }
 
     // Отрисовка модели
-    void draw(Camera3D& camera, SDL_Surface* surface, uint32_t color) {
+    void draw(Camera3D& camera, SDL_Surface* surface, uint32_t color, uint32_t fill_color, Zbuffer zbuffer) {
         // Получаем видимые полигоны
         auto visiblePolygons = getVisiblePolygons(camera);
         
@@ -112,27 +113,6 @@ public:
                 // Нормализуем ребро (меньший индекс всегда первый)
                 if (v1 > v2) std::swap(v1, v2);
                 visibleEdges.insert({v1, v2});
-                // Matrix vert1(4, 1), vert2(4, 1);
-                
-                // // Получаем координаты первой вершины
-                // for (size_t i = 0; i < 4; ++i) {
-                //     vert1.at(i, 0) = transformedVertices.at(i, v1);
-                // }
-                
-                // // Получаем координаты второй вершины
-                // for (size_t i = 0; i < 4; ++i) {
-                //     vert2.at(i, 0) = transformedVertices.at(i, v2);
-                // }
-                
-                // // Отрисовываем ребро с соответствующим цветом
-                // uint32_t edgeColor = color;
-                // if ((v1 == 2 && v2 == 3) || (v1 == 3 && v2 == 2)) {
-                //     edgeColor = 0xFFFF00;  // Желтый цвет
-                // }
-                // if ((v1 == 3 && v2 == 0) || (v1 == 0 && v2 == 3)) {
-                //     edgeColor = 0xFF00FF;  // Фиолетовый цвет
-                // }
-                // camera.drawLine(surface, vert1, vert2, edgeColor);
             }
         }
         
@@ -147,8 +127,8 @@ public:
                 }
                 verticesQQQ.push_back(vertex);
             }
-            std::cout << "=== VI: "  << index++ << " : " << polygon.vertexIndices[0] << " " << polygon.vertexIndices[1] << " " << polygon.vertexIndices[2] << std::endl;
-            // camera.fillTriangle(surface, verticesQQQ[0], verticesQQQ[1], verticesQQQ[2], 0x333333);
+            //std::cout << "=== VI: "  << index++ << " : " << polygon.vertexIndices[0] << " " << polygon.vertexIndices[1] << " " << polygon.vertexIndices[2] << std::endl;
+            camera.fillTriangleAlt(surface, verticesQQQ[0], verticesQQQ[1], verticesQQQ[2], fill_color, zbuffer);
         }
 
         // Отрисовываем только видимые ребра
@@ -521,6 +501,11 @@ public:
     std::vector<std::vector<int>> getPolygons()
     {
         return polygons;  // Полигоны модели
+    }
+
+    Matrix getTransformedVertices()
+    {
+        return transformedVertices;
     }
 };
 

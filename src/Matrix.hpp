@@ -210,6 +210,16 @@ public:
 
     size_t getRows() const { return rows; }
     size_t getCols() const { return cols; }
+
+    void printMatrix() {
+        for(size_t i = 0; i < rows; i++) {
+            for(size_t j = 0; j < cols; j++) {
+                std::cout << data[i][j] << " "; 
+            }
+            std::cout << std::endl;
+        }
+    }
 };
+
 
 #endif /* _MATRIX_HPP_ */
