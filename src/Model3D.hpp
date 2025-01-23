@@ -97,7 +97,7 @@ public:
     }
 
     // Отрисовка модели
-    void draw(Camera3D& camera, SDL_Surface* surface, uint32_t color, uint32_t fill_color, Zbuffer zbuffer) {
+    void draw(Camera3D& camera, SDL_Surface* surface, uint32_t color, uint32_t fill_color, Zbuffer &zbuffer) {
         // Получаем видимые полигоны
         auto visiblePolygons = getVisiblePolygons(camera);
         
@@ -160,7 +160,7 @@ public:
                 if ((edge.first == 3 && edge.second == 0) || (edge.first == 0 && edge.second == 3)) {
                     edgeColor = 0xFF00FF;  // Фиолетовый цвет
                 }
-                camera.drawLine(surface, vert1, vert2, edgeColor);
+                camera.drawLine(surface, vert1, vert2, edgeColor, zbuffer);
             }
         }
     }

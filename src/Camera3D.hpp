@@ -116,24 +116,37 @@ public:
     }
 
     // Отрисовка линии в мировых координатах
-    void drawLine(SDL_Surface* surface, const Matrix& start, const Matrix& end, uint32_t color) {
+    void drawLine(SDL_Surface* surface, const Matrix& start, const Matrix& end, uint32_t color, Zbuffer& zbuffer) {
         float x1, y1, x2, y2, w1, w2;
         worldToScreen(start, x1, y1, w1);
         worldToScreen(end, x2, y2, w2);
+
+        w1 = 1.0f / w1;
+        w2 = 1.0f / w2;
         
         // Используем алгоритм Брезенхэма для отрисовки линии
-        int dx = abs((int)x2 - (int)x1);
-        int dy = abs((int)y2 - (int)y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
+        int   dx = abs((int)x2 - (int)x1);
+        int   dy = abs((int)y2 - (int)y1);
+        float dw = abs((float)w2 - (float)w1);
+
+        int   sx = x1 < x2 ? 1 : -1;
+        int   sy = y1 < y2 ? 1 : -1;
+        float sw = ((float)w2 - (float)w1) * 1.0f / abs((float)x2 - (float)x1);
+
         int err = dx - dy;
 
-        int currentX = (int)x1;
-        int currentY = (int)y1;
+        int currentX   = (int)x1;
+        int currentY   = (int)y1;
+        float currentW = (float)w1;
 
+        int stepsX = 0;
         while (true) {
+            float z = 1.0f / currentW;
             if (currentX >= 0 && currentX < W && currentY >= 0 && currentY < H) {
-                ((uint32_t*)surface->pixels)[currentY * surface->pitch/4 + currentX] = color;
+                if(z < zbuffer.getValue(currentX, currentY)) {
+                    zbuffer.setValue(currentX, currentY, z);
+                    ((uint32_t*)surface->pixels)[currentY * surface->pitch/4 + currentX] = color;   
+                }
             }
 
             if (currentX == (int)x2 && currentY == (int)y2) break;
@@ -142,11 +155,17 @@ public:
             if (e2 > -dy) {
                 err -= dy;
                 currentX += sx;
+
+                stepsX++;
+                currentW = w1 + sw * (float)stepsX;
+                
             }
             if (e2 < dx) {
                 err += dx;
                 currentY += sy;
             }
+
+            
         }
     }
 
@@ -212,7 +231,7 @@ public:
         float w;
     } Point2D;
 
-    void fillTriangleAlt(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, uint32_t color, Zbuffer zbuffer) {
+    void fillTriangleAlt(SDL_Surface* surface, const Matrix& v1, const Matrix& v2, const Matrix& v3, uint32_t color, Zbuffer& zbuffer) {
         float x1, y1, x2, y2, x3, y3, w1, w2, w3;
         worldToScreen(v1, x1, y1, w1);
         worldToScreen(v2, x2, y2, w2);
@@ -372,7 +391,7 @@ public:
 
 
     // Отрисовка координатных осей
-    void drawAxes(SDL_Surface* surface) {
+    void drawAxes(SDL_Surface* surface, Zbuffer zbuffer) {
         float axisLength = 2.0f;  // Длина осей
 
         Matrix origin(4, 1);
@@ -382,33 +401,33 @@ public:
         Matrix xAxis(4, 1);
         xAxis.at(0, 0) = axisLength;
         xAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, xAxis, 0xFF0000);  // Красная ось X
+        drawLine(surface, origin, xAxis, 0xFF0000, zbuffer);  // Красная ось X
 
         Matrix yAxis(4, 1);
         yAxis.at(1, 0) = axisLength;
         yAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, yAxis, 0x00FF00);  // Зеленая ось Y
+        drawLine(surface, origin, yAxis, 0x00FF00, zbuffer);  // Зеленая ось Y
 
         Matrix zAxis(4, 1);
         zAxis.at(2, 0) = axisLength;
         zAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, zAxis, 0x0000FF);  // Синяя ось Z
+        drawLine(surface, origin, zAxis, 0x0000FF, zbuffer);  // Синяя ось Z
 
         // Отрицательные оси (более тусклые)
         Matrix negXAxis(4, 1);
         negXAxis.at(0, 0) = -axisLength;
         negXAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, negXAxis, 0x800000);  // Темно-красная ось -X
+        drawLine(surface, origin, negXAxis, 0x800000, zbuffer);  // Темно-красная ось -X
 
         Matrix negYAxis(4, 1);
         negYAxis.at(1, 0) = -axisLength;
         negYAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, negYAxis, 0x008000);  // Темно-зеленая ось -Y
+        drawLine(surface, origin, negYAxis, 0x008000, zbuffer);  // Темно-зеленая ось -Y
 
         Matrix negZAxis(4, 1);
         negZAxis.at(2, 0) = -axisLength;
         negZAxis.at(3, 0) = 1.0f;
-        drawLine(surface, origin, negZAxis, 0x000080);  // Темно-синяя ось -Z
+        drawLine(surface, origin, negZAxis, 0x000080, zbuffer);  // Темно-синяя ось -Z
     }
 
     void setScreenSize(int width, int height) {

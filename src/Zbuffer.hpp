@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 
+#include <iostream>
 
 #include <vector>
 
@@ -22,6 +23,16 @@ class Zbuffer {
             buffer.push_back(buf_row);
         }
     };
+
+    void make_matrix(size_t _w, size_t _h) {
+        width = _w;
+        heigth = _h;
+        buffer.clear();
+        std::vector<float> buf_row(width, std::numeric_limits<float>::max());
+        for(size_t i = 0; i < heigth; i++) {
+            buffer.push_back(buf_row);
+        }
+    }
 
     size_t getWidth() {
         return width;

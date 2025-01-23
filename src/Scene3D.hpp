@@ -49,8 +49,9 @@ public:
         // Очищаем поверхность светло-серым цветом
         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x11, 0x11, 0x11));
         
+        zbuffer.clear();
         // Отрисовка осей координат
-        camera.drawAxes(surface);
+        camera.drawAxes(surface, zbuffer);
         
         std::vector<uint32_t> model_colors;
         model_colors.push_back(0x006600);
@@ -78,6 +79,7 @@ public:
         }
         surface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
         camera.setScreenSize(width, height);
+        zbuffer.clear();
     }
 
     Camera3D& getCamera() {
