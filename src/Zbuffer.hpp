@@ -18,8 +18,8 @@ class Zbuffer {
     Zbuffer(size_t _width, size_t _heigth) {
         width = _width;
         heigth = _heigth;
-        std::vector<float> buf_row(width, std::numeric_limits<float>::max());
-        for(size_t i = 0; i < heigth; i++) {
+        std::vector<float> buf_row(heigth, std::numeric_limits<float>::max());
+        for(size_t i = 0; i < width; i++) {
             buffer.push_back(buf_row);
         }
     };
@@ -27,11 +27,12 @@ class Zbuffer {
     void make_matrix(size_t _w, size_t _h) {
         width = _w;
         heigth = _h;
-        buffer.clear();
+        std::vector<std::vector<float>> tmp_buffer;
         std::vector<float> buf_row(width, std::numeric_limits<float>::max());
         for(size_t i = 0; i < heigth; i++) {
             buffer.push_back(buf_row);
         }
+        buffer = tmp_buffer;
     }
 
     size_t getWidth() {

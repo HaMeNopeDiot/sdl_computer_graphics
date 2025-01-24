@@ -8,7 +8,7 @@
 
 bool debug = false;
 
-const int SCREEN_WIDTH = 1024;
+const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1024;
 
 int main(int argc, char** args) {

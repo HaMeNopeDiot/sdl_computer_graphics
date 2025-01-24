@@ -119,9 +119,7 @@ public:
             allInOneVerticies = mergeVerticesERows(allInOneVerticies, modelsVerticies[i]);
         }
 
-        std::cout << "Bababoey ~" << std::endl;
         allInOneVerticies.printMatrix();
-        std::cout << "Bababoey A" << std::endl;
 
 
 
@@ -136,10 +134,8 @@ public:
         size_t colsA = A.getCols();
         size_t colsB = B.getCols();
 
-        std::cout << "ASS" << std::endl;
         if(rowsA == rowsB) {
             
-            std::cout << "ASS" << std::endl;
             /* pass */
             size_t rows = rowsA;
             Matrix C(rows, colsA + colsB);
