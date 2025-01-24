@@ -238,17 +238,10 @@ public:
         worldToScreen(v3, x3, y3, w3);
         // Переведу все по удобству в объекты
         Point2D top, mid, bot;
-        // std::cout<< "Yo mama: " << w1 << " " << w2 << " " << w3 << std::endl;
+
         w1 = 1.0f / w1;
         w2 = 1.0f / w2;
         w3 = 1.0f / w3;
-
-        // x1 = std::trunc(x1);
-        // x2 = std::trunc(x2);
-        // x3 = std::trunc(x3);
-        // y1 = std::trunc(y1);
-        // y2 = std::trunc(y2);
-        // y3 = std::trunc(y3);
 
         top.x = x1;
         top.y = y1;
@@ -262,6 +255,7 @@ public:
         bot.y = y3;
         bot.w = w3;
 
+        // Отсортируем вершины вертикально
         if(mid.y < top.y) {
             std::swap(mid, top);
         }
@@ -278,19 +272,23 @@ public:
         float dyTopBot = bot.y - top.y;
         float dyMidBot = bot.y - mid.y;
         
+        // Проверяем, что треугольник имеет высоту больше 0 
         if(dyTopBot == 0) {
             return;
         }
 
+        // Шаги от низа вверх
         Point2D topBotsStep;
         topBotsStep.x = ((bot.x - top.x) * 1.0f / dyTopBot);
         topBotsStep.w = ((bot.w - top.w) * 1.0f / dyTopBot);
 
+        // Середина между вверхней и нижней вершиной
         Point2D mid2;
         mid2.x = top.x + dyTopMid * topBotsStep.x;
         mid2.y = top.y + dyTopMid;
         mid2.w = top.w + dyTopMid * topBotsStep.w;
 
+        // Проверяем что mid левее mid2, так как мы будем рисовать горизонтальную линию слева-направо
         if(mid.x > mid2.x) {
             std::swap(mid, mid2);
         }
@@ -318,6 +316,7 @@ public:
                 right.x = std::trunc(top.x + ySteps * rightStep.x);
                 right.w = top.w + ySteps * rightStep.w;
 
+                // Рисуем линию слева направо
                 float dx = right.x - left.x;
                 if(dx != 0) {
                     float wStep = (right.w - left.w) * 1.0f / dx;
